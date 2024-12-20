@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>たすき掛けのクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+            /* ボタンの間隔を設定 */
+        }
+
+        #options {
+            display: flex;
+            /* フレックスボックスを使用 */
+            justify-content: center;
+            /* 中央寄せ */
+            flex-wrap: wrap;
+            /* 必要に応じて折り返し */
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>たすき掛けのクイズ</h1>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！ </p>
+        <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p> <!-- 経過時間を表示するための要素を追加 -->
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script>
+        let currentSolution = '';
+        let options = [];
+        let correctCount = 0;
+        let timeLeft = 0; // タイマーの初期値
+        let timerInterval;
+        let abtimes;
+        let cdtimes;
+        let frag = [];
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            generateProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+        function gcd(a, b) {
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        // 互いに素かどうか判定する関数
+        function areCoprime(num1, num2) {
+            return gcd(num1, num2) === 1 ? 1 : 0;
+        }
+        function generateProblem() {
+            let a, b, c, d;
+            do {
+                a = getRandomInt(1, 4);
+                c = getRandomInt(1, 4);
+            } while (a * c === 1); // a * b が 1 の場合再度値を定義
+            abtimes = a * c;
+            const g = getRandomInt(1, 2);
+            const h = getRandomInt(1, 2);
+            do {
+                if (g == 1) {
+                    b = getRandomInt(1, 6);
+                } else {
+                    b = getRandomInt(-6, -1);
+                }
+            } while (a != 1 && areCoprime(a, Math.abs(b)) == 0)
+            do {
+                if (h == 1) {
+                    d = getRandomInt(1, 6);
+                } else {
+                    d = getRandomInt(-6, -1);
+                }
+            } while (c != 1 && areCoprime(c, Math.abs(d)) == 0)
+
+            if (c > a) {
+                [a, c] = [c, a];
+                [b, d] = [d, b];
+            }
+            if (a == c && d > b) {
+                [b, d] = [d, b];
+            }
+            frag[0] = a;
+            frag[1] = b;
+            frag[2] = c;
+            frag[3] = d;
+            frag[4] = 0;
+
+            const e = -(a * d + b * c);
+            const f = b * d;
+            let problem = `${a * c}  x^2 ${e === 0 ? '' : (e > 0 ? '+' : '') + (e == 1 ? '' : e == -1 ? '-' : e) + 'x'} ${f === 0 ? '' : (f > 0 ? '+' : '-') + Math.abs(f)}`;
+
+
+            currentSolution = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+            problem.trim();
+            options = generateOptions(currentSolution);
+            document.getElementById("problem").innerHTML = '$$' + problem + '$$';
+            document.getElementById("solution").innerHTML = '';
+            document.getElementById("options").innerHTML = options.map((option, index) =>
+                `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}')">${index + 1}: $$${option}$$</button>`
+            ).join('');
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function checkAnswer(selected, correct) {
+            const isCorrect = selected === correct;
+            document.getElementById("solution").innerHTML = isCorrect ? '正解です！' : '不正解です。正しい答えは: $$' + correct + '$$';
+            if (isCorrect) {
+                correctCount++;
+            }
+            else {
+                correctCount = 0; // 不正解のときは連続正解数を0に設定
+            }
+            // 5問正解したらエンド画面に移動
+            if (correctCount === 5) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="generateProblem()">次の問題に進む</button>';
+            }
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function generateOptions(correct) {
+            const wrongOptions = [];
+            let Problemk = 0;//解答の試行回数
+            let a = 0;
+            let c = 0;
+            let b, d;
+            for (let i = 1; i * i <= Math.abs(frag[0] * frag[2]); i++) {
+                if ((frag[0] * frag[2]) % i == 0) {
+                    c = i;
+                    a = frag[0] * frag[2] / i;
+                    for (let j = 1; j * j <= Math.abs(frag[1] * frag[3]); j++) {
+                        if ((frag[1] * frag[3]) % j == 0) {
+                            d = j;
+                            b = frag[1] * frag[3] / j;
+                            if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                let wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                    wrongOptions.push(wrongOption);
+                                }
+                            }
+                            [b, d] = [d, b];
+                            if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                    wrongOptions.push(wrongOption);
+                                }
+                            }
+                            [b, d] = [-d, -b];
+                            if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                    wrongOptions.push(wrongOption);
+                                }
+                            }
+                            [b, d] = [d, b];
+                            if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                    wrongOptions.push(wrongOption);
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+            if (wrongOptions.length < 3) {
+                for (let i = 1; i * i <= Math.abs(frag[0] * frag[2]); i++) {
+                    if ((frag[0] * frag[2]) % i == 0) {
+                        c = i;
+                        a = frag[0] * frag[2] / i;
+                        for (let j = 1; j * j <= Math.abs(frag[1] * frag[3]); j++) {
+                            if ((frag[1] * frag[3]) % j == 0) {
+                                d = j;
+                                b = -frag[1] * frag[3] / j;
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    let wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                                [b, d] = [d, b];
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                                [b, d] = [-d, -b];
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                                [b, d] = [d, b];
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    wrongOption = `(${a == 1 ? '' : a}x ${b > 0 ? '' : '+'} ${-b})(${c == 1 ? '' : c}x ${d > 0 ? '' : '+'} ${-d})`;
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            return shuffle([correct, ...wrongOptions]);
+        }
+
+        function shuffle(array) {
+            let ans = [];
+            const k = Math.floor(Math.random() * 5);
+            for (let i = array.length -1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i))+1;
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            for (i = 1; i < 4; i++) {
+               ans[i]=array[i];
+            }
+            ans.splice(k,0,array[0]);
+            return ans;
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval); // タイマーをクリア
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft; // 経過時間を表示
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0; // タイマーのリセット
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+        // ページを読み込んだときにスタート画面を表示
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
