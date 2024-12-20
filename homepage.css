@@ -23,6 +23,7 @@
         .menu {
             position: relative;
             list-style: none;
+            appearance: none;
             margin: 0;
             padding: 0;
         }
