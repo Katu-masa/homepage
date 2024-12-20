@@ -2,9 +2,10 @@
 <html lang="ja">
 
 <head>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知的なホームページ</title>
+    <title>数学の問題集サイト</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -22,15 +23,61 @@
         }
 
         nav {
-            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            background-color: #34495e;
+            padding: 10px 0;
         }
 
-        nav a {
-            margin: 0 10px;
+        .menu {
+            position: relative;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .menu>li {
+            display: inline-block;
+            position: relative;
+            padding: 10px 30px;
+            /* 左右の間隔を広げる */
+            color: white;
+            cursor: pointer;
+        }
+
+        .menu>li:hover {
+            background-color: #3b5998;
+        }
+
+        .menu>li>ul {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #34495e;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .menu>li:hover>ul {
+            display: block;
+        }
+
+        .menu>li>ul>li {
+            padding: 10px 20px;
+            color: white;
+            white-space: nowrap;
+        }
+
+        .menu>li>ul>li a {
+            color: white;
             text-decoration: none;
-            color: #ecf0f1;
-            font-size: 1.1em;
-            /* フォントサイズを調整 */
+        }
+
+        .menu>li>ul>li:hover {
+            background-color: #3b5998;
         }
 
         main {
@@ -40,7 +87,6 @@
             background: white;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
-            /* 角を丸くする */
         }
 
         footer {
@@ -53,54 +99,18 @@
             width: 100%;
         }
 
-        /* ボタンのスタイル */
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        .button:hover {
-            background-color: #2980b9;
-        }
-
-        /* スマホ用レスポンシブデザイン */
         @media (max-width: 600px) {
-            nav a {
-                display: block;
-                /* 各リンクをブロック要素にして縦に並べる */
-                margin: 10px 0;
-                /* 上下のマージンを調整 */
-            }
-
             main {
                 margin: 10px;
-                /* メインコンテンツのマージンを小さくする */
                 padding: 15px;
-                /* パディングを調整 */
             }
 
             h1 {
                 font-size: 1.8em;
-                /* ヘッダーのサイズを調整 */
             }
 
             h2 {
                 font-size: 1.5em;
-                /* サブヘッダーのサイズを調整 */
-            }
-
-            .button {
-                width: 100%;
-                /* ボタンを全幅にする */
-                padding: 15px;
-                /* パディングを調整 */
             }
         }
     </style>
@@ -109,11 +119,28 @@
 <body>
 
     <header>
-        <h1>知的なホームページ</h1>
+        <h1>数学　web問題</h1>
         <nav>
-            <a href="about.html">私たちについて</a>
-            <a href="#services">サービス</a>
-            <a href="#contact">お問い合わせ</a>
+            <ul class="menu">
+                <li>1年
+                    <ul>
+                        <li><a href="s1.html">数学Ⅰ</a></li>
+                        <li><a href="sa.html">数学A</a></li>
+                    </ul>
+                </li>
+                <li>2年
+                    <ul>
+                        <li><a href="s2.html">数学Ⅱ</a></li>
+                        <li><a href="sb.html">数学B</a></li>
+                    </ul>
+                </li>
+                <li>3年
+                    <ul>
+                        <li><a href="s3.html">数学Ⅲ</a></li>
+                        <li><a href="sc.html">数学C</a></li>
+                    </ul>
+                </li>
+            </ul>
         </nav>
     </header>
 
@@ -123,20 +150,10 @@
             <p>私たちは、様々な知的サービスを提供しています。例えば、教育プログラム、コンサルティング、リサーチなどです。</p>
         </section>
 
-        <section id="contact">
-            <h2>お問い合わせ</h2>
-            <p>ご質問やご相談がありましたら、以下のメールアドレスまでご連絡ください。</p>
-            <p>Email: info@example.com</p>
-        </section>
-
-        <!-- ボタンを追加 -->
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="button" onclick="navigateToPage()">別のページへ移動</button>
-        </div>
     </main>
 
     <footer>
-        <p>&copy; 2023 知的なホームページ</p>
+        <p>&copy; 2024 数学　web問題</p>
     </footer>
 
 </body>
