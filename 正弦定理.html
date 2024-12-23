@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正弦定理のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>正弦定理のクイズ</h1>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script>
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            generateProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+        function tosin(angle) {
+            let ans = [];
+            if (angle == 30) {
+                ans = [1, 1, 2, 1]
+            } else if (angle == 45) {
+                ans = [1, 1, 1, 2]
+            } else if (angle == 60) {
+                ans = [1, 3, 2, 1]
+            } else if (angle == 90) {
+                ans = [1, 1, 1, 1]
+            } else if (angle == 120) {
+                ans = [1, 3, 2, 1]
+            } else if (angle == 135) {
+                ans = [1, 1, 1, 2]
+            } else if (angle == 150) {
+                ans = [1, 1, 2, 1]
+            }
+            return ans;
+        }
+        function times(timea, timeb) {
+            let timesans = [];
+            for (let i = 0; i < 4; i++) {
+                timesans[i] = timea[i] * timeb[i];
+            }
+            timesans = simplsqrt(timesans);
+            timesans = simplfrac(timesans);
+            return timesans; // 計算結果を返す
+        }
+
+
+        function gcd(a, b) {
+            // 絶対値を取ることで負の数を防ぐ
+            a = Math.abs(a);
+            b = Math.abs(b);
+
+            // どちらかが0の場合は、a + b（非ゼロ側）を返す
+            if (a === 0) return b;
+            if (b === 0) return a;
+
+            // ユークリッドの互除法
+            while (b !== 0) {
+                [a, b] = [b, a % b];
+            }
+            return a;
+        }
+        function simplfrac(frac) {
+            const gcdOut = gcd(frac[0], frac[2]);
+            frac[0] /= gcdOut;
+            frac[2] /= gcdOut;
+
+            const gcdIn = gcd(frac[1], frac[3]);
+            frac[1] /= gcdIn;
+            frac[3] /= gcdIn;
+
+            return frac;
+        }
+        function rationalize(frac) {
+            let answerfrac = [];
+            answerfrac[0] = frac[0];
+            answerfrac[1] = frac[1] * frac[3];
+            answerfrac[2] = frac[2];
+            answerfrac[3] = frac[3] * frac[3];
+            answerfrac = simplsqrt(answerfrac);
+            answerfrac = simplfrac(answerfrac);
+            return answerfrac;
+        }
+        function simplsqrt(sqrt) {
+            let ans = [];
+            for (let i = 0; i < 4; i++) {
+                ans[i] = sqrt[i];
+            }
+            for (let i = 2; i <= ans[1]; i++) {
+                while (ans[1] % (i * i) === 0) {
+                    ans[0] *= i; // 平方数の根をルート外に出す
+                    ans[1] /= i * i; // 割り切れる平方数でルート内を簡略化
+                }
+            }
+            for (let i = 2; i <= ans[3]; i++) {
+                while (ans[3] % (i * i) === 0) {
+                    ans[2] *= i; // 平方数の根をルート外に出す
+                    ans[3] /= i * i; // 割り切れる平方数でルート内を簡略化
+                }
+            }
+            return ans;
+        }
+        function generateProblem() {
+            const possibleangleA = [30, 45, 60, 90, 120, 135, 150];
+            const angleA = possibleangleA[Math.floor(Math.random() * possibleangleA.length)];
+            const sinA = tosin(angleA);
+            const possibleSideA = [2, 3, 5, 7];
+            let sideA = [getRandomInt(1, 6), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
+
+            // 問題文を生成
+            let question = `次のような\\bigtriangleup ABC において、外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
+            let answer = times(sideA, sinA);
+            answer = times(answer, [1, 1, 2, 1]);
+            answer = rationalize(answer);
+            let answerfrac = [];
+            if (answer[0] == 1 && answer[1] == 1) {
+                answerfrac[0] = 1;
+            }
+            else if (answer[0] == 1) {
+                answerfrac[0] = `\\sqrt\{ ${answer[1]}\}`;
+            }
+            else if (answer[1] == 1) {
+                answerfrac[0] = answer[0];
+            }
+            else {
+                answerfrac[0] = `${answer[0]}\\sqrt\{ ${answer[1]}\}`;
+            }
+
+            if (answer[2] == 1 && answer[3] == 1) {
+                answerfrac[1] = 1;
+            }
+            else if (answer[2] == 1) {
+                answerfrac[1] = `\\sqrt\{ ${answer[3]}\}`;
+            }
+            else if (answer[3] == 1) {
+                answerfrac[1] = answer[2];
+            }
+            else {
+                answerfrac[1] = `${answer[2]}\\sqrt\{ ${answer[3]}\}`;
+            }
+            if (answerfrac[1] == 1) {
+                currentSolution = `${answerfrac[0]}`
+            }
+            else {
+                currentSolution = `\\frac\{ ${answerfrac[0]}\} \{ ${answerfrac[1]}\}`
+            }
+            const options = generateOptions(currentSolution);
+
+            document.getElementById("problem").innerHTML = '$$' + question + '$$';
+            document.getElementById("solution").innerHTML = '';
+            document.getElementById("options").innerHTML = options.map((option, index) =>
+                `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}')">${index + 1}: $$${option}$$</button>`
+            ).join('');
+
+            // MathJax で再描画
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function generateOptions(correct) {
+            const options = [correct];
+            while (options.length < 4) {
+                const possiblerandomangleA = [30, 45, 60, 90, 120, 135, 150];
+                const randomangleA = possiblerandomangleA[Math.floor(Math.random() * possiblerandomangleA.length)];
+                const randomsinA = tosin(randomangleA);
+                const possiblerandomSideA = [2, 3, 5, 7];
+                let randomsideA = [getRandomInt(1, 6), possiblerandomSideA[Math.floor(Math.random() * possiblerandomSideA.length)], 1, 1];
+                let randomanswer = times(randomsideA, randomsinA);
+                randomanswer = times(randomanswer, [1, 1, 2, 1]);
+                randomanswer = rationalize(randomanswer);
+                let randomanswerfrac = [];
+                let randomOption;
+                if (randomanswer[0] == 1 && randomanswer[1] == 1) {
+                    randomanswerfrac[0] = 1;
+                }
+                else if (randomanswer[0] == 1) {
+                    randomanswerfrac[0] = `\\sqrt\{ ${randomanswer[1]}\}`;
+                }
+                else if (randomanswer[1] == 1) {
+                    randomanswerfrac[0] = randomanswer[0];
+                }
+                else {
+                    randomanswerfrac[0] = `${randomanswer[0]}\\sqrt\{ ${randomanswer[1]}\}`;
+                }
+
+                if (randomanswer[2] == 1 && randomanswer[3] == 1) {
+                    randomanswerfrac[1] = 1;
+                }
+                else if (randomanswer[2] == 1) {
+                    randomanswerfrac[1] = `\\sqrt\{ ${randomanswer[3]}\}`;
+                }
+                else if (randomanswer[3] == 1) {
+                    randomanswerfrac[1] = randomanswer[2];
+                }
+                else {
+                    randomanswerfrac[1] = `${randomanswer[2]}\\sqrt\{ ${randomanswer[3]}\}`;
+                }
+                if (randomanswerfrac[1] == 1) {
+                    randomOption = `${randomanswerfrac[0]}`
+                }
+                else {
+                    randomOption = `\\frac\{ ${randomanswerfrac[0]}\} \{ ${randomanswerfrac[1]}\}`
+                }
+                if (!options.includes(randomOption)) {
+                    options.push(randomOption);
+                }
+            }
+            return shuffleArray(options);
+        }
+
+
+
+        function checkAnswer(selected, correct) {
+            const isCorrect = selected.trim() === correct.trim();
+            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/pm/g, '\\pm').replace(/sqrt/g, '\\sqrt');
+            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/pm/g, '\\pm').replace(/sqrt/g, '\\sqrt');
+            document.getElementById("solution").innerHTML = isCorrect
+                ? '正解です！'
+                : `\\(${escapedSelected}\\)は不正解です。正しい答えは: $$${escapedCorrect}$$`;
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                correctCount = 0;
+            }
+
+            if (correctCount === 5) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="generateProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+        function degToRad(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
