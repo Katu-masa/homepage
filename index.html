@@ -7,53 +7,15 @@
     <link rel="icon" type="image/png" href="favicon.png" sizes="192x192">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数学の問題集サイト</title>
+    <title>数学　web問題</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="homepage.css" type="text/css">
 </head>
 
-
 <body>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const menuItems = document.querySelectorAll('.menu > li');
-
-            menuItems.forEach(item => {
-                item.addEventListener('click', function (e) {
-                    e.stopPropagation(); // イベントのバブルを防ぐ
-
-                    // 他のすべてのメニューを閉じる
-                    menuItems.forEach(otherItem => {
-                        if (otherItem !== item) {
-                            const otherSubmenu = otherItem.querySelector('ul');
-                            if (otherSubmenu) {
-                                otherSubmenu.style.display = 'none';
-                            }
-                        }
-                    });
-
-                    // 現在のメニューをトグルする
-                    const submenu = this.querySelector('ul');
-                    if (submenu) {
-                        submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
-                    }
-                });
-            });
-
-            // メニュー以外をクリックしたら全て閉じる
-            document.addEventListener('click', function () {
-                menuItems.forEach(item => {
-                    const submenu = item.querySelector('ul');
-                    if (submenu) {
-                        submenu.style.display = 'none';
-                    }
-                });
-            });
-        });
-    </script>
-
-
+    <script src="homepage.js"></script>
     <header>
-        <h1>数学　web問題</h1>
+        <h1>数学 web問題 数学Ⅰ</h1>
         <nav>
             <ul class="menu">
                 <li>1年
@@ -79,19 +41,22 @@
     </header>
 
     <main>
-        <section id="services">
-            <h2>サイトの説明</h2>
-            <p>上のタブから解きたい問題の分野を選んで、無限に解きましょう！</p>
-        </section>
+        <title>数学Ⅰ</title>
+        <h2>数と式</h2>
+        <a href="因数分解.html" target="_blank" rel="noreferrer noopener" class="button">因数分解</a>
+        <a href="たすき掛け完成.html" target="_blank" rel="noreferrer noopener" class="button">たすき掛け</a>
+        <a href="2次方程式完成.html" target="_blank" rel="noreferrer noopener" class="button">2次方程式</a>
 
+        <h2>集合と命題</h2>
+        <h2>2次関数</h2>
+        <h2>図形と計量</h2>
+        <h2>データの分析</h2>
+        <a href="index.html" class="back-button">戻る</a>
     </main>
 
     <footer>
-        <p>&copy; 2024 数学　web問題</p>
+        <p>&copy; 2023 知的なホームページ</p>
     </footer>
-
-
-
 
 </body>
 
