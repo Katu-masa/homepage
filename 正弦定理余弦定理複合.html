@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>正弦余弦複合のクイズ</title>
+    <title>正弦定理のクイズ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -55,8 +55,7 @@
 
 <body>
     <div id="start-screen">
-        <h1>正弦・余弦複合のクイズ</h1>
-        <h2>連続５問正解しましょう！</h2>
+        <h1>正弦定理のクイズ</h1>
         <button onclick="startQuiz()">スタート</button>
     </div>
 
@@ -137,7 +136,7 @@
                 }
                 let sideA = sqrt(add(add(times(sideB, sideB), times(sideC, sideC)), times(times([-2, 1, 1, 1], sideB), times(sideC, cosA))));
                 let answer = `${angleA}^\\circ`;
-                let question = ` \\( a=${printfrac(sideA)} \\) ,\\( b=${printfrac(sideB)} \\) ,\\( c=${printfrac(sideC)} \\)  である \\( \\bigtriangleup ABC \\) において、\\( A \\)を求めよ。 `;
+                let question = ` \\( a=${printfrac(sideA)} \\) ,\\( b=${printfrac(sideB)} \\) ,\\( c=${printfrac(sideC)} \\)  <br>である \\( \\bigtriangleup ABC \\) において、\\( A \\)を求めよ。 `;
 
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
@@ -188,7 +187,7 @@
                 }
                 let answer = printfrac(sqrt(add(add(times(sideB, sideB), times(sideC, sideC)), times(times([-2, 1, 1, 1], sideB), times(sideC, cosA)))));
 
-                let question = ` \\( A=${angleA}^\\circ \\) ,\\( b=${printfrac(sideB)} \\) ,\\( c=${printfrac(sideC)} \\)  である \\( \\bigtriangleup ABC \\) において、\\( b \\)を求めよ。 `;
+                let question = ` \\( A=${angleA}^\\circ \\) ,\\( b=${printfrac(sideB)} \\) ,\\( c=${printfrac(sideC)} \\)  <br>である \\( \\bigtriangleup ABC \\) において、\\( b \\)を求めよ。 `;
 
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
@@ -251,7 +250,7 @@
                 let sideA = [getRandomInt(1, 6), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
 
                 // 問題文を生成
-                let question = `次のような\\bigtriangleup ABC において、外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
+                let question = `次のような\\bigtriangleup ABC において、<br>外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
                 let answer = times(sideA, sinA);
                 answer = times(answer, [1, 1, 2, 1]);
                 answer = rationalize(answer);
@@ -366,7 +365,7 @@
                 R = [R[0], R[1], 1, 1];
                 // 問題文を生成
                 let printR = printfrac(R);
-                let question = ` \\( a=${printfrac(sideA)} \\) である \\( \\bigtriangleup ABC \\) において、外接円の半径\\( R = ${printR} \\) のとき、\\( A\\) を求めよ。 `;
+                let question = ` \\( a=${printfrac(sideA)} \\) である \\( \\bigtriangleup ABC \\) において、<br>外接円の半径\\( R = ${printR} \\) のとき、\\( A\\) を求めよ。 `;
                 let answer = sintoangle(sinA);
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
@@ -421,7 +420,7 @@
                 let answer = printfrac(rationalize(times(times(sideA, sinB), arcsinA)));
 
                 let printR = printfrac(R);
-                let question = ` \\( a=${printfrac(sideA)} \\) ,\\( A=${angleA}^\\circ  \\) , \\( B=${angleB}^\\circ \\) である \\( \\bigtriangleup ABC \\) において、\\( b \\)を求めよ。 `;
+                let question = ` \\( a=${printfrac(sideA)} \\) ,\\( A=${angleA}^\\circ  \\) , \\( B=${angleB}^\\circ \\) <br>である \\( \\bigtriangleup ABC \\) において、\\( b \\)を求めよ。 `;
 
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
