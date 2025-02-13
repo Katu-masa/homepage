@@ -1,4 +1,3 @@
-
 function tosin(angle) {
     let ans = [];
     if (angle == 0) {
