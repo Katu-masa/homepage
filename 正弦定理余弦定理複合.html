@@ -141,8 +141,44 @@
 
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
-
-                midwayceremony = `余弦定理を使う。`
+                let printsideA = ``;
+                let printsideB = ``;
+                let printsideC = ``;
+                if (sideA[1] == 1) {
+                    printsideA = ` ${printfrac(sideA)}`;
+                }
+                else {
+                    printsideA = ` (${printfrac(sideA)})`;
+                }
+                if (sideB[1] == 1) {
+                    printsideB = ` ${printfrac(sideB)}`;
+                }
+                else {
+                    printsideB = ` (${printfrac(sideB)})`;
+                }
+                if (sideC[1] == 1) {
+                    printsideC = ` ${printfrac(sideC)}`;
+                }
+                else {
+                    printsideC = ` (${printfrac(sideC)})`;
+                }
+                let upfrachoge = (times(sideB, sideB));
+                let upfrac = upfrachoge[0]
+                upfrachoge = (times(sideC, sideC));
+                upfrac = upfrachoge[0] + upfrac;
+                upfrachoge = (times(sideA, sideA));
+                upfrac = - upfrachoge[0] + upfrac;
+                let frachoge = times(times([2, 1, 1, 1], sideB), sideC);
+                let newfrac = [upfrac, 1, frachoge[0], frachoge[1]];
+                newfrac = simplfrac(newfrac);
+                let newfrac2 = rationalize(newfrac);
+                let newfrac2p = ``;
+                if (newfrac2.toString() === newfrac.toString()) {
+                }
+                else {
+                    newfrac2p = `=${printfrac(newfrac2)}`;
+                }
+                midwayceremony = `余弦定理 \\( \\cos A =\\frac{b^2+c^2-a^2}{2bc}\\) を使う。\\begin{eqnarray} \\cos A & = & \\frac{${printsideB}^2+${printsideC}^2-${printsideA}^2}{2\\times ${printfrac(sideB)}\\times ${printfrac(sideC)}}\\\\ & = & \\frac{${printfrac(times(sideB, sideB))}+${printfrac(times(sideC, sideC))}-${printfrac(times(sideA, sideA))}}{${printfrac(times([2, 1, 1, 1], times(sideB, sideC)))}} \\\\ &=&\\frac{${upfrac}}{${printfrac(times([2, 1, 1, 1], times(sideB, sideC)))}}  = ${printfrac(newfrac)} ${newfrac2p} \\end{eqnarray}`;
                 document.getElementById("problem").innerHTML = question;
                 document.getElementById("solution").innerHTML = '';
                 document.getElementById("options").innerHTML = options.map((option, index) =>
@@ -193,7 +229,22 @@
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution);
 
-                midwayceremony = `余弦定理を使う。`
+                let printsideB = ``;
+                let printsideC = ``;
+                if (sideB[1] == 1) {
+                    printsideB = ` ${printfrac(sideB)}`;
+                }
+                else {
+                    printsideB = ` (${printfrac(sideB)})`;
+                }
+                if (sideC[1] == 1) {
+                    printsideC = ` ${printfrac(sideC)}`;
+                }
+                else {
+                    printsideC = ` (${printfrac(sideC)})`;
+                }
+                let hoge = times(times([-2, 1, 1, 1], sideB), times(sideC, cosA));
+                midwayceremony = `余弦定理  \\( a^2 =b^2 +c^2 -2bc \\cos A \\) を使う。\\begin{eqnarray} a^2 & = & ${printsideB}^2+${printsideC}^2-2\\times ${printfrac(sideB)} \\times ${printfrac(sideC)}\\times \\cos ${angleA}^\\circ \\\\ &=& ${printfrac(times(sideB, sideB))} + ${printfrac(times(sideC, sideC))}${hoge[0] > 0 ? '+' : '-'}${printfrac(times(times([-2, 1, 1, 1], sideB), times(sideC, cosA)))} = ${printfrac(add(add(times(sideB, sideB), times(sideC, sideC)), times(times([-2, 1, 1, 1], sideB), times(sideC, cosA))))} \\end{eqnarray}`
                 document.getElementById("problem").innerHTML = question;
                 document.getElementById("solution").innerHTML = '';
                 document.getElementById("options").innerHTML = options.map((option, index) =>
@@ -471,7 +522,7 @@
             let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
             document.getElementById("solution").innerHTML = isCorrect
                 ? '正解です！'
-                : `\\( ${escapedSelected} \\)は不正解です。${midwayceremony}正しい答えは: $$${escapedCorrect}$$`;
+                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
 
             if (isCorrect) {
                 correctCount++;
