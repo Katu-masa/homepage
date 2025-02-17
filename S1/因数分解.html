@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>因数分解のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #problem, #solution, #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px; /* ボタンの間隔を設定 */
+        }
+        #options {
+            display: flex; /* フレックスボックスを使用 */
+            justify-content: center; /* 中央寄せ */
+            flex-wrap: wrap; /* 必要に応じて折り返し */
+        }
+        #start-screen {
+            display: block;
+        }
+        #quiz-screen, #end-screen {
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>因数分解のクイズ</h1>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+    
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒</div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！ </p>
+        <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p> <!-- 経過時間を表示するための要素を追加 -->
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script>
+        let currentSolution = '';
+        let options = [];
+        let correctCount = 0;
+        let timeLeft = 0; // タイマーの初期値
+        let timerInterval;
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            generateProblem(); 
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+            }, 1000);
+        }
+
+        function generateProblem() {
+            let a = 1; 
+            let b = 1; 
+            const g = getRandomInt(1, 2);
+            const h = getRandomInt(1, 2);
+            let c;
+            let d;
+            if (g == 1) {
+                c = getRandomInt(1, 10);     
+            } else {
+                c = getRandomInt(-6, -1);
+            }
+            if (h == 1) {
+                d = getRandomInt(1, 10);     
+            } else {
+                d = getRandomInt(-6, -1);
+            }
+            if(b>a){
+            const hoge = b;
+            b=a ;
+            a=hoge;
+            }
+            if(d>c){
+            const hoge = d;
+            d=c ;
+            c=hoge;
+            }            
+            const e = -(c * b + d * a);
+            const f = c * d; 
+            let problem = `${a * b === 1 ? 'x^2' : a * b + 'x^2'} ${e === 0 ? '' : (e > 0 ? '+' : '') + e + 'x'} ${f === 0 ? '' : (f > 0 ? '+' : '-') + Math.abs(f)}`;
+            
+
+                currentSolution = `(${a==1 ? '' : a }x ${c > 0 ? '' : '+'} ${-c})(${b==1 ? '' : b}x ${d > 0 ? '' : '+'} ${-d})`;
+            
+            
+            options = generateOptions(currentSolution);
+            document.getElementById("problem").innerHTML = '$$' + problem + '$$';
+            document.getElementById("solution").innerHTML = '';
+            document.getElementById("options").innerHTML = options.map((option, index) => 
+                `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}')">${index + 1}: $$${option}$$</button>`
+            ).join('');
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function checkAnswer(selected, correct) {
+            const isCorrect = selected === correct;
+            document.getElementById("solution").innerHTML = isCorrect ? '正解です！' : '不正解です。正しい答えは: $$' + correct + '$$';
+            if (isCorrect) {
+                correctCount++;
+                if (correctCount === 5) {
+                    clearInterval(timerInterval);
+                    endQuiz();
+                } else {
+                    document.getElementById("options").innerHTML = '<button onclick="generateProblem()">次の問題に進む</button>';
+                }
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="generateProblem()">次の問題に進む</button>';
+            }
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function generateOptions(correct) {
+            const wrongOptions = [];
+            while (wrongOptions.length < 3) {
+                let a = 1;
+                let c = 1;
+                const g = getRandomInt(1, 2);
+            const h = getRandomInt(1, 2);
+            let b;
+            let d;
+            if (g == 1) {
+                b = getRandomInt(1, 10);     
+            } else {
+                b = getRandomInt(-6, -1);
+            }
+            if (h == 1) {
+                d = getRandomInt(1, 10);     
+            } else {
+                d = getRandomInt(-6, -1);
+            }  
+            if(c>a){
+            const hoge = c;
+            c=a ;
+            a=hoge;
+            }
+            if(d<b){
+            const hoge = d;
+            d=b ;
+            b=hoge;
+            }  
+                let wrongOption = `(${a === 1 ? '' : a}x ${b > 0 ? '+' : '-'} ${Math.abs(b)})(${c === 1 ? '' : c}x ${d > 0 ? '+' : '-'} ${Math.abs(d)})`;
+                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption !== correct) {
+                    wrongOptions.push(wrongOption);
+                }
+            }
+            return shuffle([correct, ...wrongOptions]);
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval); // タイマーをクリア
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft; // 経過時間を表示
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0; // タイマーのリセット
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+        // ページを読み込んだときにスタート画面を表示
+        window.onload = () => { 
+            document.getElementById("start-screen").style.display = "block"; 
+        };
+    </script>
+</body>
+</html>
