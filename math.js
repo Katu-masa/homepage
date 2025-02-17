@@ -1,3 +1,4 @@
+
 function tosin(angle) {
     let ans = [];
     if (angle == 0) {
@@ -129,6 +130,15 @@ function rationalize(frac) {
     answerfrac[3] = frac[3] * frac[3];
     answerfrac = simplsqrt(answerfrac);
     answerfrac = simplfrac(answerfrac);
+    return answerfrac;
+}
+
+function arc(frac) {
+    let answerfrac = [];
+    answerfrac[0] = frac[2];
+    answerfrac[1] = frac[3];
+    answerfrac[2] = frac[0];
+    answerfrac[3] = frac[1];
     return answerfrac;
 }
 function simplsqrt(sqrt) {
