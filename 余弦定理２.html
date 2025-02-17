@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>余弦定理のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem {
+            word-wrap: break-word;
+            /* 古いブラウザ向け */
+            overflow-wrap: break-word;
+            /* 最新のブラウザ向け */
+            white-space: normal;
+            /* 改行を有効化 */
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>余弦定理のクイズ</h1>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script src="math.js"></script>
+    <script>
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            generateProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+        function generateProblem() {
+            const possibleangleA = [30, 45, 60, 90, 120, 135, 150];
+
+            const angleA = possibleangleA[Math.floor(Math.random() * (possibleangleA.length))];
+            const cosA = tocos(angleA);
+            const possibleSideA = [1, 2, 3, 6];
+            let sideB = [getRandomInt(1, 4), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
+            let sideC = [getRandomInt(1, 4), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
+            let notsqrtfrag = times(times([1, 1, 2, 1], times(cosA, sideC)), sideB);
+            sideB = times([notsqrtfrag[2], notsqrtfrag[3], 1, 1], sideB);
+            sideC = times([1, notsqrtfrag[1], 1, 1], sideC);
+            for (let i = 0; i < 4; i++) {
+                let a = gcd(sideB[i], sideC[i]);
+                sideB[i] = sideB[i] / a;
+                sideC[i] = sideC[i] / a;
+            }
+            let sideA = sqrt(add(add(times(sideB, sideB), times(sideC, sideC)), times(times([-2, 1, 1, 1], sideB), times(sideC, cosA))));
+            let answer = `${angleA}^\\circ`;
+            let question = ` \\( a=${printfrac(sideA)} \\) ,\\( b=${printfrac(sideB)} \\) ,\\( c=${printfrac(sideC)} \\)  である \\( \\bigtriangleup ABC \\) において、\\( A \\)を求めよ。 `;
+
+            currentSolution = `${answer}`;
+            const options = generateOptions(currentSolution);
+
+            document.getElementById("problem").innerHTML = question;
+            document.getElementById("solution").innerHTML = '';
+            document.getElementById("options").innerHTML = options.map((option, index) =>
+                `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}')"> ${index + 1}: $$${option}$$</button>`
+            ).join('');
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function generateOptions(correct) {
+            const options = [correct];
+            while (options.length < 4) {
+                const possiblerandomangleA = [30, 45, 60, 90, 120, 135, 150];
+                const randomangleA = possiblerandomangleA[Math.floor(Math.random() * possiblerandomangleA.length)];
+                let randomOption = `${randomangleA}^\\circ`;
+
+                if (!options.includes(randomOption)) {
+                    options.push(randomOption);
+                }
+            }
+            return shuffleArray(options);
+        }
+
+
+        function checkAnswer(selected, correct) {
+            const isCorrect = selected.trim() === correct.trim();
+            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            document.getElementById("solution").innerHTML = isCorrect
+                ? '正解です！'
+                : `\\( ${escapedSelected} \\)は不正解です。正しい答えは: $$${escapedCorrect}$$`;
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                correctCount = 0;
+            }
+
+            if (correctCount === 5) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="generateProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
