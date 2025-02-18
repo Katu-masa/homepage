@@ -56,7 +56,7 @@
 <body>
     <div id="start-screen">
         <h1>正弦・余弦定理のクイズ</h1>
-        <h2>5問連続で正解しましょう！</h2>
+        <h2>3問連続で正解しましょう！</h2>
         <button onclick="startQuiz()">スタート</button>
     </div>
 
@@ -538,7 +538,7 @@
                 correctCount = 0;
             }
 
-            if (correctCount === 5) {
+            if (correctCount === 3) {
                 clearInterval(timerInterval);
                 endQuiz();
             } else {
