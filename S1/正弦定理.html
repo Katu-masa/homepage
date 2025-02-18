@@ -40,6 +40,28 @@
         #end-screen {
             display: none;
         }
+
+        .paint-button {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 9px;
+            padding: 10px 20px;
+            width: 80px;
+            height: 40px;
+            background-color: #aaadaf;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .paint-button:hover {
+            background-color: #3c3d3e;
+        }
+
+        canvas {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
@@ -55,6 +77,20 @@
         <div id="problem">ここに問題が表示されます</div>
         <div id="options"></div>
         <div id="solution"></div>
+
+        <h2>計算スペース</h2>
+        <div class="controls">
+            <button id="clearBtn" class="paint-button">クリア</button>
+            <button id="eraserBtn" class="paint-button">消しゴム</button>
+            <button id="penBtn" class="paint-button">ペン</button>
+            <label>
+                線の色:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+        </div>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <script src="paint.js"></script>
+
     </div>
 
     <div id="end-screen">
@@ -66,6 +102,12 @@
 
     <script src="math.js"></script>
     <script>
+
+        // 初期設定でキャンバスサイズを変更
+        resizeCanvas();
+
+        // 画面リサイズ時にもキャンバスを調整
+        window.addEventListener("resize", resizeCanvas);
         let currentSolution = '';
         let correctCount = 0;
         let timeLeft = 0;
@@ -179,7 +221,7 @@
             let sideA = [getRandomInt(1, 6), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
             const arcsinA = [sinA[2], sinA[3], sinA[0], sinA[1]];
             // 問題文を生成
-            let question = `次のような\\bigtriangleup ABC において、<br>外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
+            let question = `次のような\\( \\bigtriangleup ABC \\) において、<br>外接円の半径Rを求めよ<br>\\(  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}}  \\)`;
             let answer = times(sideA, arcsinA);
             answer = times(answer, [1, 1, 2, 1]);
             answer = rationalize(answer);
@@ -226,7 +268,7 @@
                 midway = midway + `${printfrac(rationalize(sidetimearcsin))} &=& 2R`;
             }
             midwayceremony = `正弦定理\\( \\frac{a}{\\sin A} = 2R \\)を使う。\\begin{eqnarray} \\frac{${printfrac(sideA)}}{${printfrac(sinA)}} &=& 2R \\\\ ${midway}\\end{eqnarray}`;
-            document.getElementById("problem").innerHTML = '$$' + question + '$$';
+            document.getElementById("problem").innerHTML = question;
             document.getElementById("solution").innerHTML = '';
             document.getElementById("options").innerHTML = options.map((option, index) =>
                 `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')">${index + 1}: $$${option}$$</button>`
