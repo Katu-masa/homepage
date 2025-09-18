@@ -136,6 +136,22 @@
         let timeLeft = 0;
         let timerInterval;
         let selectedLevel = 1;
+function polynomialToString(coeffs) {
+    // coeffs = [c, b, a] の順
+    const [c, b, a] = coeffs;
+    let str = "";
+
+    if(a !== 0){
+        str += (a === 1 ? "" : a) + "x^2";
+    }
+    if(b !== 0){
+        str += (b > 0 ? " + " : " - ") + Math.abs(b) + "x";
+    }
+    if(c !== 0){
+        str += (c > 0 ? " + " : " - ") + Math.abs(c);
+    }
+    return str;
+}
 
         function startQuiz(level) {
             selectedLevel = level;
@@ -344,3 +360,4 @@
 </body>
 
 </html>
+
