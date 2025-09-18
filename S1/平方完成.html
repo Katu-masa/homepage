@@ -216,48 +216,41 @@
             let options = [correct];
 
             while (options.length < 4) {
-                let randA, randB;
+                let randA = a;
+                let randB;
 
                 switch (selectedLevel) {
                     case 1: // a=1, b偶数
-                        randA = 1;
+
                         do {
                             randB = getRandomInt(-4, 4) * 2;
                         } while (randB === 0);
                         break;
                     case 2: // a=1, b奇数
-                        randA = 1;
+
                         do {
                             randB = getRandomInt(-5, 5) * 2 + 1;
                         } while (randB === 0);
                         break;
                     case 3: // a≠1, b/a偶数
                         do {
-                            randA = getRandomInt(2, 3);
+
                             let k = getRandomInt(-5, 5);
                             randB = 2 * k * randA;
                         } while (randB === 0);
                         break;
                     case 4: // a≠1, b/a奇数
                         do {
-                            randA = getRandomInt(2, 3);
+
                             let k = getRandomInt(-5, 5);
                             randB = (2 * k + 1) * randA;
                         } while (randB === 0);
                         break;
                     case 5: // フリー
+                        do { randB = getRandomInt(-5, 5); } while (randB === 0); break; default:
                         randA = getRandomInt(1, 3);
-                        do {
-                            randB = getRandomInt(-5, 5);
-                        } while (randB === 0);
-                        break;
-                    default:
-                        randA = getRandomInt(1, 3);
-                        do {
-                            randB = getRandomInt(-5, 5);
-                        } while (randB === 0);
+                        do { randB = getRandomInt(-5, 5); } while (randB === 0);
                 }
-
                 let randC = getRandomInt(-9, 9);
 
                 let pStr = printfrac([Math.abs(randB), 1, 2 * randA, 1]);
