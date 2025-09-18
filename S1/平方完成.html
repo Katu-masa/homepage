@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>平方完成のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem {
+            word-wrap: break-word;
+            /* 古いブラウザ向け */
+            overflow-wrap: break-word;
+            /* 最新のブラウザ向け */
+            white-space: normal;
+            /* 改行を有効化 */
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+
+        .paint-button {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 9px;
+            padding: 10px 20px;
+            width: 80px;
+            height: 40px;
+            background-color: #aaadaf;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .paint-button:hover {
+            background-color: #3c3d3e;
+        }
+
+        canvas {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>平方完成のクイズ</h1>
+        <button onclick="startQuiz(1)">レベル1</button>
+        <button onclick="startQuiz(2)">レベル2</button>
+        <button onclick="startQuiz(3)">レベル3</button>
+        <button onclick="startQuiz(4)">レベル4</button>
+        <button onclick="startQuiz(5)">ランダム</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+
+
+        <h2>計算スペース</h2>
+        <div class="controls">
+            <button id="clearBtn" class="paint-button">クリア</button>
+            <button id="eraserBtn" class="paint-button">消しゴム</button>
+            <button id="penBtn" class="paint-button">ペン</button>
+            <label>
+                線の色:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+        </div>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <script src="paint.js"></script>
+
+
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <p>再スタートのレベルを選択してください:</p>
+        <button onclick="startQuiz(1)">レベル1</button>
+        <button onclick="startQuiz(2)">レベル2</button>
+        <button onclick="startQuiz(3)">レベル3</button>
+        <button onclick="startQuiz(4)">レベル4</button>
+        <button onclick="startQuiz(5)">ランダム</button>
+    </div>
+    </div>
+
+
+    <script src="math.js"></script>
+    <script>
+
+        // 初期設定でキャンバスサイズを変更
+        resizeCanvas();
+
+        // 画面リサイズ時にもキャンバスを調整
+        window.addEventListener("resize", resizeCanvas);
+
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+        let selectedLevel = 1;
+
+        function startQuiz(level) {
+            selectedLevel = level;
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            generateProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+
+        function generateProblem() {
+            let a, b, c;
+
+            switch (selectedLevel) {
+                case 1:
+                    a = 1;
+                    do { b = getRandomInt(-4, 4) * 2; } while (b === 0);
+                    break;
+                case 2:
+                    a = 1;
+                    do { b = getRandomInt(-5, 5) * 2 + 1; } while (b === 0);
+                    break;
+                case 3:
+                    do {
+                        a = getRandomInt(2, 3);
+                        let k = getRandomInt(-5, 5);
+                        b = 2 * k * a;
+                    } while (b === 0);
+                    break;
+                case 4:
+                    do {
+                        a = getRandomInt(2, 3);
+                        let k = getRandomInt(-5, 5);
+                        b = (2 * k + 1) * a;
+                    } while (b === 0);
+                    break;
+                case 5:
+                    a = getRandomInt(1, 3);
+                    do { b = getRandomInt(-5, 5); } while (b === 0);
+                    break;
+            }
+
+            c = getRandomInt(-9, 9);
+
+            let question = `\\(${polynomialToString([c, b, a])}\\) を平方完成せよ`;
+
+            // pDisplay と qDisplay の安全な作り方
+            let pDisplay = (b < 0 ? "- " : "+ ") + printfrac([Math.abs(b), 1, 2 * a, 1]);
+
+            let numerator = 4 * a * c - b * b;
+            let qDisplay = "";
+            if (numerator !== 0) {
+                qDisplay = (numerator < 0 ? "- " : "+ ") + printfrac([Math.abs(numerator), 1, 4 * a, 1]);
+            }
+
+            let answer = (a === 1 ? "" : a) + `\\left(x ${pDisplay}\\right)^2 ${qDisplay}`;
+
+            const options = generateOptions(answer, a, b, c);
+
+            document.getElementById("problem").innerHTML = question;
+            document.getElementById("solution").innerHTML = '';
+            document.getElementById("options").innerHTML = options.map((option, index) =>
+                `<button class="option" onclick="checkAnswer('${option}','${answer}')">${index + 1}: $$${option}$$</button>`
+            ).join('');
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+
+        function generateOptions(correct, a, b, c) {
+            let options = [correct];
+
+            while (options.length < 4) {
+                let randA, randB;
+
+                switch (selectedLevel) {
+                    case 1: // a=1, b偶数
+                        randA = 1;
+                        do {
+                            randB = getRandomInt(-4, 4) * 2;
+                        } while (randB === 0);
+                        break;
+                    case 2: // a=1, b奇数
+                        randA = 1;
+                        do {
+                            randB = getRandomInt(-5, 5) * 2 + 1;
+                        } while (randB === 0);
+                        break;
+                    case 3: // a≠1, b/a偶数
+                        do {
+                            randA = getRandomInt(2, 3);
+                            let k = getRandomInt(-5, 5);
+                            randB = 2 * k * randA;
+                        } while (randB === 0);
+                        break;
+                    case 4: // a≠1, b/a奇数
+                        do {
+                            randA = getRandomInt(2, 3);
+                            let k = getRandomInt(-5, 5);
+                            randB = (2 * k + 1) * randA;
+                        } while (randB === 0);
+                        break;
+                    case 5: // フリー
+                        randA = getRandomInt(1, 3);
+                        do {
+                            randB = getRandomInt(-5, 5);
+                        } while (randB === 0);
+                        break;
+                    default:
+                        randA = getRandomInt(1, 3);
+                        do {
+                            randB = getRandomInt(-5, 5);
+                        } while (randB === 0);
+                }
+
+                let randC = getRandomInt(-9, 9);
+
+                let pStr = printfrac([Math.abs(randB), 1, 2 * randA, 1]);
+
+                let pDisplay = (randB < 0 ? "- " : "+ ") + printfrac([Math.abs(randB), 1, 2 * randA, 1]);
+
+                let numerator = 4 * randA * randC - randB * randB;
+                let qDisplay = "";
+                if (numerator !== 0) {
+                    qDisplay = (numerator < 0 ? "- " : "+ ") + printfrac([Math.abs(numerator), 1, 4 * randA, 1]);
+                }
+
+
+
+                let wrong = (randA === 1 ? "" : randA) + `\\left(x ${pDisplay}\\right)^2 ${qDisplay}`;
+
+                if (!options.includes(wrong)) options.push(wrong);
+            }
+
+            return shuffleArray(options);
+        }
+
+
+
+        function escapeMathJax(str) {
+            // \ を \\ に、$ などをエスケープ
+            return str.replace(/\\/g, '\\\\')
+                .replace(/\l/g, '\\l').replace(/\f/g, '\\f').replace(/\r/g, '\\r')
+        }
+
+        function checkAnswer(selected, correct) {
+            const isCorrect = selected.trim() === correct.trim();
+            let resultMessage;
+
+            if (isCorrect) {
+                resultMessage = '正解です！';
+                correctCount++;
+            } else {
+                // 不正解時に模範解答を整形して表示
+                const formattedAnswer = escapeMathJax(correct);
+                resultMessage = '不正解です。正しい答えは:  $$' + formattedAnswer + '$$';
+                correctCount = 0;
+            }
+
+            document.getElementById("solution").innerHTML = resultMessage;
+
+            if (correctCount === 5) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML =
+                    '<button onclick="generateProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
