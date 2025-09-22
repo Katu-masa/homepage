@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="apple-touch-icon" href="favicon.png" sizes="180x180">
-    <link rel="icon" type="image/png" href="favicon.png" sizes="192x192">
-　　<link rel="icon" type="image/png" href="https://katu-masa.github.io/homepage/favicon.png"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>数学の問題集サイト</title>
-    <meta name="description" content="高校生向けの数学クイズサイト。数学Ⅰの2次方程式や因数分解から数学Ⅲの微分積分などの問題を4択で解くことができます。">
+    <title>高校生向け数学クイズ｜数学Ⅰ〜Ⅲの4択問題集</title>
+    <meta name="description" content="高校生向けの数学クイズサイト。数学Ⅰの二次方程式や因数分解から数学Ⅲの微分積分まで、4択クイズ形式で学習できます。解説付きで苦手克服に最適。">
+    
+    <!-- favicon -->
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="apple-touch-icon" href="favicon.png" sizes="180x180">
+    <link rel="icon" type="image/png" href="favicon.png" sizes="192x192">
+
+    <!-- OGP（SNS共有用） -->
+    <meta property="og:title" content="高校生向け数学クイズ｜数学Ⅰ〜Ⅲの4択問題集">
+    <meta property="og:description" content="数学Ⅰ〜Ⅲの高校数学をクイズ形式で学べる無料サイト。4択問題と解説で楽しく勉強。">
+    <meta property="og:image" content="https://katu-masa.github.io/homepage/favicon.png">
+    <meta property="og:url" content="https://katu-masa.github.io/homepage/">
+    <meta property="og:type" content="website">
+
     <link rel="stylesheet" href="homepage.css" type="text/css">
+    <script src="homepage.js" defer></script>
 </head>
 
-
 <body>
-    <script src="homepage.js"></script>
     <header>
-        <a href="index.html">
+        <a href="index.html" aria-label="トップページへ">
             <img src="favicon.ico" alt="サイトのロゴ" style="height: 50px;">
         </a>
-        <h1>数学 web問題</h1>
+        <h1>高校数学クイズサイト</h1>
         <nav>
             <ul class="menu">
                 <li>1年
@@ -46,21 +53,25 @@
     </header>
 
     <main>
-        <section id="services">
+        <section id="about">
             <h2>サイトの説明</h2>
-            <h3>高校生用の問題を自動作成するwebアプリを掲載しています。数学が苦手な人でも楽しめるように、ゲームっぽくしました。iPadやタブレットを対象にしているため、スマホだと見ずらいことがあります。</h3>
+            <p>
+                このサイトでは、高校生向けの数学問題を自動生成して出題します。<br>
+                数学Ⅰの二次方程式や因数分解から、数学Ⅲの微分・積分まで幅広く対応。<br>
+                4択クイズ形式で、ゲーム感覚で楽しく学べるのが特徴です。<br>
+                iPadやタブレットでの利用を想定しているため、スマートフォンではやや見づらい場合があります。
+            </p>
         </section>
-        <a href="https://forms.gle/7CoCKZr7qwjPwTnG7" class="back-button">問い合わせフォーム</a><br>
-       
+
+        <section id="contact">
+            <h2>お問い合わせ</h2>
+            <p>不具合報告や要望がある場合は、以下のフォームからご連絡ください。</p>
+            <a href="https://forms.gle/7CoCKZr7qwjPwTnG7" class="back-button">問い合わせフォーム</a>
+        </section>
     </main>
 
     <footer>
-        <p>&copy; 数学　web問題</p>
+        <p>&copy; 2025 高校数学クイズサイト</p>
     </footer>
-
-
-
-
 </body>
-
 </html>
