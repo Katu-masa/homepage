@@ -172,6 +172,8 @@
         }
 
         function startTimer() {
+
+            clearInterval(timerInterval); // ← 古いタイマーを止める
             timerInterval = setInterval(() => {
                 timeLeft++;
                 document.getElementById("time").innerText = timeLeft;
