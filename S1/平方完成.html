@@ -155,8 +155,18 @@
 
         function startQuiz(level) {
             selectedLevel = level;
+
+            // --- ★ここでリセット処理を追加 ---
+            correctCount = 0;   // 連続正解数リセット
+            timeLeft = 0;       // 経過時間リセット
+            clearInterval(timerInterval); // 古いタイマーが残っていたら止める
+            document.getElementById("time").innerText = timeLeft;
+            document.getElementById("currentC").innerText = correctCount;
+            // ----------------------------------
+
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("quiz-screen").style.display = "block";
+            document.getElementById("end-screen").style.display = "none"; // 終了画面も非表示
             generateProblem();
             startTimer();
         }
