@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>和の法則・積の法則のクイズ</title>
+    <title>正弦・余弦定理のクイズ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -77,7 +77,7 @@
 
 <body>
     <div id="start-screen">
-        <h1>和の法則・積の法則のクイズ</h1>
+        <h1>正弦・余弦定理のクイズ</h1>
         <h2>3問連続で正解しましょう！</h2>
         <button onclick="startQuiz()">スタート</button>
     </div>
@@ -100,7 +100,7 @@
         </div>
         <canvas id="drawingCanvas" width="800" height="600"></canvas>
         <script src="paint.js"></script>
-    <script src="math.js"></script>
+
     </div>
 
     <div id="end-screen">
@@ -110,6 +110,7 @@
         <button onclick="resetQuiz()">再スタート</button>
     </div>
 
+    <script src="math.js"></script>
     <script>
 
         // 初期設定でキャンバスサイズを変更
@@ -123,11 +124,9 @@
         let correctCount = 0;
         let timeLeft = 0;
         let timerInterval;
-        let shuffleProble = 0;
+        let shuffl = 0;
         let midwayceremony = '';
 
-resizeCanvas();
-        
         function startQuiz() {
             document.getElementById("start-screen").style.display = "none";
             document.getElementById("quiz-screen").style.display = "block";
@@ -144,20 +143,20 @@ resizeCanvas();
         }
 
         function nextProblem() {
-            shuffleProble = 1;
-            if (shuffleProble == 1) {
+            shuffl = getRandomInt(1, 6);
+            if (shuffl == 1) {
                 generateProblem1();
             }
-            else if (shuffleProble == 2) {
+            else if (shuffl == 2) {
                 generateProblem2();
             }
-            else if (shuffleProble == 3) {
+            else if (shuffl == 3) {
                 generateProblem3();
             }
-            else if (shuffleProble == 4) {
+            else if (shuffl == 4) {
                 generateProblem4();
             }
-            else if (shuffleProble == 5) {
+            else if (shuffl == 5) {
                 generateProblem5();
             }
             else {
@@ -625,10 +624,4 @@ resizeCanvas();
     </script>
 </body>
 
-
 </html>
-
-
-
-
-
