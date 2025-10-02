@@ -171,20 +171,17 @@
                 const erabu = getRandomInt(2, moto); // 選ぶ人数
 
                 // P(n, r) の計算
-                let result = 1;
-                for (let i = 0; i < erabu; i++) {
-                    result *= (moto - i);
-                }
+                let result = permutation(moto, 3);
 
                 // 途中式を作る
                 let stepsArr = [];
-                for (let i = 0; i < erabu; i++) {
+                for (let i = 0; i < 3; i++) {
                     stepsArr.push(moto - i);
                 }
-                midwayceremony = `順列を計算すればよいので$$  \{\}_\{${moto}\} P_${erabu} = ${stepsArr.join(" \\times ")}$$ `;
+                midwayceremony = `順列を計算すればよいので$$  \{\}_\{${moto}\} P_${3} = ${stepsArr.join(" \\times ")}$$ `;
 
                 const answer = `${result}通り`;
-                const question = `${moto}人の生徒から${erabu}人を選んで1列に並べるときの並び順は何通りあるか`;
+                const question = `${moto}人の生徒の中から、委員長、副委員長、書記を一人ずつ選ぶとき選び方は何通りあるか。ただし、兼任は認めない。`;
 
                 // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
                 currentSolution = answer;
@@ -629,6 +626,4 @@
     </script>
 </body>
 
-
 </html>
-
