@@ -269,15 +269,14 @@ function permutation(n, r) {
     if (r > n) return 0; // r が n より大きい場合は 0
     return factorial(n) / factorial(n - r);
 }
-function Combinations(elements, r) {
-    const factorial = (n) => {
+function Combinations(n, r) {
+    const factorial = (num) => {
         let result = 1;
-        for (let i = 2; i <= n; i++) {
+        for (let i = 2; i <= num; i++) {
             result *= i;
         }
         return result;
     };
 
-    const combinations = factorial(elements.length) / (factorial(r) * factorial(elements.length - r));
-    return combinations;
+    return factorial(n) / (factorial(r) * factorial(n - r));
 }
