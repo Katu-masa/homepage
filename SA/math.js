@@ -280,3 +280,8 @@ function Combinations(n, r) {
 
     return factorial(n) / (factorial(r) * factorial(n - r));
 }
+function showRandomKanji(num) {
+    const kansuji = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+    const kanji = kansuji[num];
+    return kanji;
+}
