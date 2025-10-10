@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>組み合わせのクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem {
+            word-wrap: break-word;
+            /* 古いブラウザ向け */
+            overflow-wrap: break-word;
+            /* 最新のブラウザ向け */
+            white-space: normal;
+            /* 改行を有効化 */
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+
+        .paint-button {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 9px;
+            padding: 10px 20px;
+            width: 80px;
+            height: 40px;
+            background-color: #aaadaf;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .paint-button:hover {
+            background-color: #3c3d3e;
+        }
+
+        canvas {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>組み合わせのクイズ</h1>
+        <h2>3問連続で正解しましょう！</h2>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+        <h2>計算スペース</h2>
+        <div class="controls">
+            <button id="clearBtn" class="paint-button">クリア</button>
+            <button id="eraserBtn" class="paint-button">消しゴム</button>
+            <button id="penBtn" class="paint-button">ペン</button>
+            <label>
+                線の色:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+        </div>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <script src="paint.js"></script>
+
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script src="math.js"></script>
+    <script>
+
+        // 初期設定でキャンバスサイズを変更
+        resizeCanvas();
+
+        // 画面リサイズ時にもキャンバスを調整
+        window.addEventListener("resize", resizeCanvas);
+
+
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+        let shuffleProblem = 0;
+        let midwayceremony = '';
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            nextProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+
+        function nextProblem() {
+            shuffleProblem = getRandomInt(1, 5);
+            if (shuffleProblem == 1) {
+                generateProblem1();
+            }
+            else if (shuffleProblem == 2) {
+                generateProblem2();
+            }
+            else if (shuffleProblem == 3) {
+                generateProblem3();
+            }
+            else if (shuffleProblem == 4) {
+                generateProblem4();
+            }
+            else if (shuffleProblem == 5) {
+                generateProblem5();
+            }
+            else if (shuffleProblem == 5) {
+                generateProblem5();
+            }
+        }
+
+        function generateProblem1() {
+            generateProblem();
+            function generateProblem() {
+                const moto = getRandomInt(4, 10);
+                const erabu = getRandomInt(0, moto);
+                // C(n, r) の計算
+                let result = Combinations(moto, erabu);
+
+                // 途中式を作る
+                let stepsArr = [];
+                for (let i = 0; i < erabu; i++) {
+                    stepsArr.push(moto - i);
+                }
+                let stepsArr2 = [];
+                for (let i = 0; i < erabu; i++) {
+                    stepsArr2.push(erabu - i);
+                }
+                const numerator = `${stepsArr.join(" \\times ")} `;
+                const denominator = `${stepsArr2.join(" \\times ")}  `;
+
+                midwayceremony = `$$ _\{${moto}\} C _\{${erabu}\} =  \\frac{ ${numerator} }{ ${denominator}  } = ${Combinations(moto, erabu)}$$ `;
+                if (erabu == 0) { midwayceremony = `$$ _\{${moto}\} C _\{${erabu}\} =  ${Combinations(moto, erabu)}$$ `; }
+                const answer = `${result}通り`;
+                const question = `\\( _\{${moto}\} C _\{${erabu}\} \\)の値を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(4, 10);
+                    const b = getRandomInt(0, a);
+                    const value = `${Combinations(a, b)}通り`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem2() {
+            generateProblem();
+
+            function generateProblem() {
+                const moto = getRandomInt(4, 9); // 
+
+                // P(n, r) の計算
+                let result = Combinations(moto, 3);
+
+                // 途中式を作る
+                let stepsArr1 = [];
+                let stepsArr2 = [];
+                for (let i = 0; i < 3; i++) {
+                    stepsArr1.push(moto - i);
+                }
+                for (let i = 0; i < 3; i++) {
+                    stepsArr2.push(3 - i);
+                }
+                midwayceremony = `${moto}の頂点から３個の頂点を選べばよいので、
+                $$ \{\}_\{${moto}\} C _\{${3}\} = \\frac{ ${stepsArr1.join(" \\times ")} }{ ${stepsArr2.join(" \\times ")} } $$`;
+
+                const answer = `${result}通り`;
+                const question = `正${showRandomKanji(moto)}角形の${moto}個の頂点のうち、3点を結んで三角形を作るとき、三角形は何個作れるか。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(4, 9);
+                    const value = `${Combinations(a, 3)}通り`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem3() {
+            generateProblem();
+
+            function generateProblem() {
+                const moto = getRandomInt(4, 9); // 
+
+                // P(n, r) の計算
+                let result = Combinations(moto, 2) - moto;
+
+                // 途中式を作る
+                let stepsArr1 = [];
+                let stepsArr2 = [];
+                for (let i = 0; i < 2; i++) {
+                    stepsArr1.push(moto - i);
+                }
+                for (let i = 0; i < 2; i++) {
+                    stepsArr2.push(2 - i);
+                }
+                midwayceremony = `${moto}の頂点から２個の頂点を選ぶと線分が１本引ける。
+                その線分は$$ \{\}_\{${moto}\} C _\{2\} = \\frac{ ${stepsArr1.join(" \\times ")} }{ ${stepsArr2.join(" \\times ")} } = ${Combinations(moto, 2)} $$
+                そこから辺の数を除くと
+                $$ ${Combinations(moto, 2)} - ${moto} = ${Combinations(moto, 2) - moto} $$`;
+
+                const answer = `${result}通り`;
+                const question = `正${showRandomKanji(moto)}角形の対角線の本数を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(4, 9);
+                    const value = `${Combinations(a, 2) - a}通り`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem4() {
+            generateProblem();
+
+            function generateProblem() {
+                const otona1 = getRandomInt(2, 10); // 大人1
+                const otona2 = getRandomInt(1, otona1 - 1); // 大人2
+                const kodomo1 = getRandomInt(2, 10); // こども1
+                const kodomo2 = getRandomInt(1, kodomo1 - 1); // こども2
+                let result = Combinations(otona1, otona2) * Combinations(kodomo1, kodomo2);
+                // 途中式を作る
+                let stepsArr11 = [];//大人の分子
+                for (let i = 0; i < otona2; i++) {
+                    stepsArr11.push(otona1 - i);
+                }
+                let stepsArr12 = [];//大人の分母
+                for (let i = 0; i < otona2; i++) {
+                    stepsArr12.push(otona2 - i);
+                }
+                let stepsArr21 = [];//こどもの分子
+                for (let i = 0; i < kodomo2; i++) {
+                    stepsArr21.push(kodomo1 - i);
+                }
+                let stepsArr22 = [];//こどもの分母
+                for (let i = 0; i < kodomo2; i++) {
+                    stepsArr22.push(kodomo2 - i);
+                }
+                midwayceremony = `大人${otona2}人の選び方は$$ \{\}_\{${otona1}\} C _\{${otona2}\} \\times \{\}_\{${kodomo1}\} C _\{${kodomo2}\} = 
+                \\frac{ ${stepsArr11.join(" \\times ")} }{ ${stepsArr12.join(" \\times ")} } \\times \\frac{ ${stepsArr21.join(" \\times ")} }{ ${stepsArr22.join(" \\times ")} }
+                 = ${Combinations(otona1, otona2)} \\times ${Combinations(kodomo1, kodomo2)} = ${Combinations(otona1, otona2) * Combinations(kodomo1, kodomo2)} $$`;
+                const answer = `${result}通り`;
+                const question = `${otona1}人の大人の中から${otona2}人、${kodomo1}人のこどもの中から${kodomo2}人を選んで${otona2 + kodomo2}人の組を作るとき、何通りの組が作れるか`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+
+                    const a = getRandomInt(2, 10);
+                    const b = getRandomInt(2, a - 1);
+                    const c = getRandomInt(2, 10);
+                    const d = getRandomInt(2, c - 1);
+                    const value = `${Combinations(a, b) * Combinations(c, d)}通り`;
+
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem5() {
+            generateProblem();
+
+            function generateProblem() {
+                const suuji = getRandomInt(7, 10); //
+                const suuji1 = getRandomInt(2, suuji - 3); //
+                const suuji2 = getRandomInt(1, suuji - suuji1 - 1); //
+                const suuji3 = suuji - suuji1 - suuji2; //
+                let result = permutation(suuji, suuji) / permutation(suuji1, suuji1) / permutation(suuji2, suuji2) / permutation(suuji3, suuji3);
+                // 途中式を作る
+                let step1 = [];
+                for (let i = 0; i < suuji1; i++) {
+                    step1.push(1);
+                }
+                let step2 = [];
+                for (let i = 0; i < suuji2; i++) {
+                    step2.push(2);
+                }
+                let step3 = [];
+                for (let i = 0; i < suuji3; i++) {
+                    step3.push(3);
+                }
+                let stepsArr = [];
+                for (let i = 0; i < suuji; i++) {
+                    stepsArr.push(suuji - i);
+                }
+                let stepsArr1 = [];
+                for (let i = 0; i < suuji1; i++) {
+                    stepsArr1.push(suuji1 - i);
+                }
+                let stepsArr2 = [];
+                for (let i = 0; i < suuji2; i++) {
+                    stepsArr2.push(suuji2 - i);
+                }
+                let stepsArr3 = [];
+                for (let i = 0; i < suuji3; i++) {
+                    stepsArr3.push(suuji3 - i);
+                }
+                midwayceremony = `同じ数字が${suuji1}個、${suuji2}個、${suuji3}個あり、これらを1列に並べるから
+                $$ \\frac\{ ${suuji} ! \}\{ ${suuji1} ! \\times ${suuji2} ! \\times ${suuji3} ! \}
+                \\\\[2em] =\\frac\{ ${stepsArr.join(" \\times ")} \}\{ ${stepsArr1.join(" \\times ")} \\times ${stepsArr2.join(" \\times ")} \\times ${stepsArr3.join(" \\times ")} \}
+                \\\\[2em] =\\frac\{ ${permutation(suuji, suuji)} \}\{ ${permutation(suuji1, suuji1)} \\times ${permutation(suuji2, suuji2)} \\times ${permutation(suuji3, suuji3)} \}
+                \\\\[2em] =${permutation(suuji, suuji) / permutation(suuji1, suuji1) / permutation(suuji2, suuji2) / permutation(suuji3, suuji3)}$$`;
+
+                const answer = `${result}通り`;
+                const question = `${suuji}個の数字${step1.join(",")},${step2.join(",")},${step3.join(",")}の全部を使って${suuji}桁の数字を並べる方法は何通りあるか。`; // 
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+
+                function generateOptions(correct) {
+                    const options = [correct]; // まず正解を入れる
+
+                    while (options.length < 4) {
+
+                        const a = getRandomInt(7, 10); //
+                        const b = getRandomInt(2, a - 3); //
+                        const c = getRandomInt(1, a - b - 1); //
+                        const d = a - b - c; //
+                        const value = `${permutation(a, a) / permutation(b, b) / permutation(c, c) / permutation(d, d)}通り`;
+
+
+                        if (!options.includes(value)) {
+                            options.push(value);
+                        }
+                    }
+
+                    return shuffleArray(options); // 順番をシャッフルしたい場合
+                }
+            }
+        }
+
+        function checkAnswer(selected, correct, midway) {
+            const isCorrect = selected.trim() === correct.trim();
+            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            document.getElementById("solution").innerHTML = isCorrect
+                ? '正解です！'
+                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                correctCount = 0;
+            }
+
+            if (correctCount === 3) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="nextProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
