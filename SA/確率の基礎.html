@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>確率の基本のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #problem {
+            word-wrap: break-word;
+            /* 古いブラウザ向け */
+            overflow-wrap: break-word;
+            /* 最新のブラウザ向け */
+            white-space: normal;
+            /* 改行を有効化 */
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+
+        .paint-button {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 9px;
+            padding: 10px 20px;
+            width: 80px;
+            height: 40px;
+            background-color: #aaadaf;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .paint-button:hover {
+            background-color: #3c3d3e;
+        }
+
+        button.active {
+            background-color: #007bff;
+            /* 選択中ボタンの色（青） */
+            color: white;
+            border: 2px solid #0056b3;
+            transform: scale(1.05);
+        }
+
+        canvas {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>確率の基本のクイズ</h1>
+        <h2>3問連続で正解しましょう！</h2>
+        <button onclick="startQuiz()">スタート</button>
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+        <h2>計算スペース</h2>
+        <div class="controls">
+            <button id="clearBtn" class="paint-button">クリア</button>
+            <button id="eraserBtn" class="paint-button">消しゴム</button>
+            <button id="penBtn" class="paint-button">ペン</button>
+            <label>
+                線の色:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+        </div>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <script src="paint.js"></script>
+
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <button onclick="resetQuiz()">再スタート</button>
+    </div>
+
+    <script src="math.js"></script>
+    <script>
+
+        // 初期設定でキャンバスサイズを変更
+        resizeCanvas();
+
+        // 画面リサイズ時にもキャンバスを調整
+        window.addEventListener("resize", resizeCanvas);
+
+
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+        let shuffleProblem = 0;
+        let midwayceremony = '';
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            nextProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+
+        function nextProblem() {
+            shuffleProblem = getRandomInt(1, 5);
+            if (shuffleProblem == 1) {
+                generateProblem1();
+            }
+            else if (shuffleProblem == 2) {
+                generateProblem2();
+            }
+            else if (shuffleProblem == 3) {
+                generateProblem3();
+            }
+            else if (shuffleProblem == 4) {
+                generateProblem4();
+            }
+            else if (shuffleProblem == 5) {
+                generateProblem5();
+            }
+        }
+
+        function generateProblem1() {
+            generateProblem();
+            function generateProblem() {
+                const sainome = getRandomInt(2, 5);
+                let ansfrac = [];
+                ansfrac = [7 - sainome, 1, 6, 1];
+                // C(n, r) の計算
+                let result = printfrac(ansfrac);
+
+                midwayceremony = `起こりうるすべての目の出方は6通り。<br>
+                このうち${sainome}以上の目の出方は${7 - sainome}通り。<br>
+                よって、${sainome}以上の目が出る確率は$$ \\frac{${7 - sainome}}{6} = ${result} $$`;
+
+                const answer = `${result}`;
+                const question = `1個のさいころを投げたとき、${sainome}以上の目が出る確率を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(2, 5);
+                    let b = [a, 1, 6, 1];
+                    const value = `${printfrac(b)}`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem2() {
+            generateProblem();
+
+            function generateProblem() {
+                const moto = getRandomInt(3, 7); // 目の和
+
+                // P(n, r) の計算
+                let result = printfrac([moto - 1, 1, 36, 1]);
+
+                midwayceremony = `目の和が${moto}になるのは${moto - 1}通り、よって求める確率は
+                $$ \\frac{${moto - 1}}{36} = ${printfrac([moto - 1, 1, 36, 1])} $$`;
+
+                const answer = `${result}`;
+                const question = `2個のさいころを同時に投げるとき、目の和が${moto}になる確率を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(3, 7);
+                    const value = `${printfrac([a - 1, 1, 36, 1])}`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem3() {
+            generateProblem();
+
+            function generateProblem() {
+                const moto = getRandomInt(4, 9); // 
+
+                // P(n, r) の計算
+                let result = printfrac([permutation(moto - 2, moto - 2), 1, permutation(moto, moto), 1]);
+
+                midwayceremony = `${moto}人全員の並び順は \\( ${moto} \! \\)通りある。<br>
+                Aが1番目、Bが${moto}番目のとき、A,B以外の${moto - 2}人の並び順は \\( ${moto - 2} \! \\)通りある。よって求める確率は<br>
+                $$ \\frac{${moto - 2} \! }{${moto} \!} = ${printfrac([permutation(moto - 2, moto - 2), 1, permutation(moto, moto), 1])} $$`;
+
+                const answer = `${result}`;
+                const question = `A,Bの2人を含む${moto}人のリレー選手がいる。走る順番をくじ引きで決めるときAが1番目、Bが${moto}番目になる確率を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+                    const a = getRandomInt(4, 9);
+                    const value = `${printfrac([permutation(a - 2, a - 2), 1, permutation(a, a), 1])}`;
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem4() {
+            generateProblem();
+
+            function generateProblem() {
+                const aka = getRandomInt(3, 6); //
+                const siro = getRandomInt(3, 6); //
+                let result = printfrac([Combinations(siro, 2), 1, Combinations(aka + siro, 2), 1]);
+
+                midwayceremony = `全部で${aka + siro}個の入った袋から、2個取る組み合わせは\\( \{\}_\{${aka + siro}\}C_\{2\}\\)通り。<br>
+                白玉${siro}個から2個取る組み合わせは\\( \{\}_${siro}C_\{2\}\\)通りある。<br>よって求める確率は<br>
+                $$ \\frac{\{\}_\{${siro}\}C_\{2\}\}{\{\}_\{${aka + siro}\}C_\{2\}\} = \{${printfrac([Combinations(siro, 2), 1, Combinations(aka + siro, 2), 1])}\} $$`;
+                const answer = `${result}`;
+                const question = `赤玉${aka}個と白玉${siro}個の入った袋から、2個の玉を同時に取り出すとき、2個とも白玉がでる確率を求めよ。`;
+
+                // 既存の仕組みに合わせて解答・選択肢・ボタンを生成
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct]; // まず正解を入れる
+
+                while (options.length < 4) {
+
+                    const a = getRandomInt(3, 6);
+                    const b = getRandomInt(3, 6);
+                    const value = `${printfrac([Combinations(b, 2), 1, Combinations(a + b, 2), 1])}`;
+
+
+                    if (!options.includes(value)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options); // 順番をシャッフルしたい場合
+            }
+        }
+
+        function generateProblem5() {
+            generateProblem();
+
+            function generateProblem() {
+                const aka1 = getRandomInt(2, 8); //
+                const siro1 = getRandomInt(2, 8); //
+                const siro2 = getRandomInt(1, siro1); //
+                let result = printfrac([Combinations(aka1, 1) * Combinations(siro1, siro2), 1, Combinations(aka1 + siro1, siro2 + 1), 1]);
+
+                midwayceremony = `全部で${aka1 + siro1}個の入った袋から、${siro2 + 1}個取る組み合わせは\\( \{\}_\{${aka1 + siro1}\}C_\{${siro2 + 1}\}\\)通り。<br>
+                赤玉${aka1}個から1個,白玉${siro1}個から${siro2}個取る組み合わせは\\( \{\}_\{${aka1}\}C_\{1\} \\times \{\}_\{${siro1}\}C_\{${siro2}\}\\)通りある。<br>よって求める確率は<br>
+                $$ \\frac{\{\}_\{${aka1}\}C_\{1\} \\times \{\}_\{${siro1}\}C_\{${siro2}\}}{\{\}_\{${aka1 + siro1}\}C_\{${siro2 + 1}\}}$$`;
+
+                const answer = `${result}`;
+                const question = `赤玉${aka1}個と白玉${siro1}個の入った袋から、${siro2 + 1}個の玉を同時に取り出すとき、赤玉が1個だけ出る確率を求めよ。`; // 
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+
+                function generateOptions(correct) {
+                    const options = [correct]; // まず正解を入れる
+
+                    while (options.length < 4) {
+
+                        const a = getRandomInt(2, 8); //
+                        const b = getRandomInt(2, 8); //
+                        const c = getRandomInt(1, b); //
+                        const value = `${printfrac([Combinations(a, 1) * Combinations(b, c), 1, Combinations(a + b, c + 1), 1])}`;
+
+
+                        if (!options.includes(value)) {
+                            options.push(value);
+                        }
+                    }
+
+                    return shuffleArray(options); // 順番をシャッフルしたい場合
+                }
+            }
+        }
+
+        function checkAnswer(selected, correct, midway) {
+            const isCorrect = selected.trim() === correct.trim();
+            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            document.getElementById("solution").innerHTML = isCorrect
+                ? '正解です！'
+                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                correctCount = 0;
+            }
+
+            if (correctCount === 3) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="nextProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+        }
+
+        function resetQuiz() {
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            startQuiz();
+        }
+
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+        };
+    </script>
+</body>
+
+</html>
