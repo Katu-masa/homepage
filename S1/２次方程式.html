@@ -113,11 +113,12 @@
         <h1>2次方程式のクイズ</h1>
         <h2>3問連続で正解しましょう！</h2>
         <h2>レベルを選択してください</h2>
-        <button onclick="startQuiz(1)">レベル1</button>
-        <button onclick="startQuiz(2)">レベル2</button>
-        <button onclick="startQuiz(3)">レベル3</button>
-        <button onclick="startQuiz(4)">レベル4</button>
-        <button onclick="startQuiz(5)">レベル5</button>
+        <button onclick="startQuiz(1)">レベル1(因数分解)</button>
+        <button onclick="startQuiz(2)">レベル2(たすき掛け)</button>
+        <button onclick="startQuiz(3)">レベル3(解の公式)</button>
+        <button onclick="startQuiz(4)">レベル4(解の公式：約分あり)</button>
+        <button onclick="startQuiz(5)">レベル5(解の公式：複雑)</button>
+        <button onclick="startQuiz(6)">レベル6(解の公式：ランダム)</button>
     </div>
 
     <div id="quiz-screen">
@@ -192,6 +193,8 @@
                 generateProblem4();
             } else if (selectedLevel === 5) {
                 generateProblem5();
+            } else if (selectedLevel === 6) {
+                generateProblem6();
             }
         }
 
@@ -566,7 +569,7 @@
                 const cDisplay = c < 0 ? `(${c})` : c;
                 const FDisplay = 4 * a * c < 0 ? `+${-4 * a * c}` : `-${4 * a * c}`;
                 midwayceremony = `解の公式を使うと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
-                \\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}$$`;
+                =\\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}$$`;
                 const answer = `${result}`;
                 // ...existing code...
 
@@ -700,6 +703,184 @@
                 printsqrt[1] = b * b - 4 * a * c;
                 printsqrt = simplsqrt(printsqrt);
                 midwayceremony = `解の公式を使うと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
+                =\\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}\\\\
+                =\\frac{${-b}\\pm \\sqrt{${b * b - 4 * a * c}}}{${2 * a}}\\\\
+                =\\frac{${-b}\\pm ${printfrac([printsqrt[0], printsqrt[1], 1, 1])}}{${2 * a}}$$`;
+                const answer = `${result}`;
+                // ...existing code...
+
+
+                currentSolution = answer;
+                const options = generateOptions(currentSolution);
+
+                document.getElementById('problem').innerHTML = question;
+                document.getElementById('solution').innerHTML = '';
+
+                // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                const optionsContainer = document.getElementById('options');
+                optionsContainer.innerHTML = '';
+                options.forEach((option, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option';
+                    btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                    btn.addEventListener('click', () => {
+                        // checkAnswer(option, currentSolution, explanation) を使えば
+                        // checkAnswer 側で説明を表示する仕組みになっている想定
+                        checkAnswer(option, currentSolution, midwayceremony);
+                    });
+                    optionsContainer.appendChild(btn);
+                });
+
+                MathJax.Hub.Queue(['Typeset', MathJax.Hub]);
+
+
+            }
+            function generateOptions(correct) {
+                const options = [correct];
+
+                // 解を正規化する関数（順番に関わらず同じ形にする）
+                function normalizeValue(value) {
+                    // "x=..." の形を想定
+                    const match = value.match(/x=(.+)/);
+                    if (!match) return value;
+                    return `x=${match[1]}`;
+                }
+
+                while (options.length < 4) {
+                    // 整数の範囲で乱数を生成
+                    let a, b, c;
+                    let value;
+                    do {
+                        a = 1;
+                        b = 2 * getRandomInt(-4, 4);
+                        c = getRandomInt(-8, 8);
+                    } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0);
+
+                    value = `x=${tosolution(a, b, c)}`;
+
+                    // 正規化してから重複チェック
+                    const normalizedValue = normalizeValue(value);
+                    if (!options.map(normalizeValue).includes(normalizedValue)) {
+                        options.push(value);
+                    }
+                }
+
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem5() {
+            let frag = [];
+            generateProblem();
+
+            function tosolution(numberaa, numberbb, numbercc) {
+                let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
+                let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
+                let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
+
+                // 平方根の係数が 1 の場合に 1 を省略するためのヘルパー関数
+                function printRootN(rootn, g) {
+                    const coefficient = rootn / g;
+                    // 係数が 1 の場合は空文字列を返し、1を省略する
+                    // 係数が -1 の場合はマイナス符号のみを返す
+                    if (coefficient === 1) {
+                        return '';
+                    } else if (coefficient === -1) {
+                        return '-';
+                    }
+                    // それ以外の場合はそのまま係数を返す
+                    return coefficient;
+                }
+
+                if (numberb % 2 == 0) {
+                    let bb = numberb / 2;
+                    let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                    let rootSq = tosqrt(bb * bb - numbera * numberc)[1]; // ルートの中身
+                    let denom = numbera;
+                    // -bb と rootn と denom の最大公約数を求める
+                    let g = gcd(gcd(Math.abs(-bb), rootn), denom);
+
+                    // 分子の定数項部分を整形
+                    const constTerm = ((-bb) / g === 0 ? '' : (-bb) / g);
+
+                    // 係数部分をprintRootNで整形
+                    const rootCoeff = printRootN(rootn, g);
+
+                    // ルートの中身が 1 の場合はルート記号全体を省略する
+                    const rootPart = (rootSq === 1 && rootCoeff !== '') ? rootCoeff : `${rootCoeff}\\sqrt{ ${rootSq}}`;
+                    // ただし、rootCoeffが空文字（つまり係数1）でrootSqが1の場合、定数項と±の後が空になる可能性があるので、その場合は1を表示
+                    // このコードでは rootn = 0 （実数解1つ）の場合を考慮する必要がありますが、ここでは元のコードのロジックを尊重します
+
+                    if (numbera == 1) {
+                        return `${constTerm}\\pm ${rootPart}`;
+                    } else {
+                        return `\\frac{${constTerm}\\pm ${rootPart}}{${denom / g}}`;
+                    }
+                }
+                else {
+                    let bb = numberb;
+                    let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                    let rootSq = tosqrt(bb * bb - 4 * numbera * numberc)[1]; // ルートの中身
+                    let denom = 2 * numbera;
+                    // -bb と rootn と denom の最大公約数を求める
+                    let g = gcd(gcd(Math.abs(-bb), rootn), denom);
+
+                    // 係数部分をprintRootNで整形
+                    const rootCoeff = printRootN(rootn, g);
+
+                    // ルートの中身が 1 の場合はルート記号全体を省略する
+                    const rootPart = (rootSq === 1 && rootCoeff !== '') ? rootCoeff : `${rootCoeff}\\sqrt{ ${rootSq}}`;
+
+                    return `\\frac{${(-bb) / g}\\pm ${rootPart}}{${denom / g}}`;
+                }
+            }
+
+            function divideBygcb(a, b, c, d) {
+                const lcmValue = gcdOfThree(a, b, c);
+                return d / lcmValue;
+            }
+            function gcdOfThree(a, b, c) {
+                // 三つの数の最大公約数を求める
+                return gcd(gcd(a, b), c);
+            }
+            function tosqrt(number) {
+                let ans = [];
+                ans[0] = 1;
+                ans[1] = number;
+                for (let i = 1; i <= Math.sqrt(ans[1]); i++) {
+                    if (ans[1] % (i * i) === 0) {
+                        ans[0] = ans[0] * i;
+                        ans[1] = ans[1] / (i * i);
+                        i = 1;
+                    }
+                }
+                return ans; // 平方数がない場合
+            }
+            function generateProblem() {
+
+                let a, b, c;
+                do {
+                    a = getRandomInt(2, 4);
+                    b = 2 * getRandomInt(-4, 4);
+                    c = getRandomInt(-8, 8);
+
+                } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0 || gcdOfThree(a, b, c) !== 1)
+                frag[0] = a;
+                frag[1] = b;
+                frag[2] = c;
+                let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0\\)`;
+                currentSolution = `x=${tosolution(a, b, c)}`;
+                const result = currentSolution;
+                const bAbs = Math.abs(b);
+                const cAbs = Math.abs(c);
+                const bDisplay = b < 0 ? `(${b})` : b;
+                const cDisplay = c < 0 ? `(${c})` : c;
+                const FDisplay = 4 * a * c < 0 ? `+${-4 * a * c}` : `-${4 * a * c}`;
+                let printsqrt = [];
+                printsqrt[0] = 1;
+                printsqrt[1] = b * b - 4 * a * c;
+                printsqrt = simplsqrt(printsqrt);
+                midwayceremony = `解の公式を使うと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
                 \\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}\\\\
                 \\frac{${-b}\\pm \\sqrt{${b * b - 4 * a * c}}}{${2 * a}}\\\\
                 \\frac{${-b}\\pm ${printfrac([printsqrt[0], printsqrt[1], 1, 1])}}{${2 * a}}$$`;
@@ -766,7 +947,7 @@
             }
         }
 
-        function generateProblem5() {
+        function generateProblem6() {
             let frag = [];
             generateProblem();
             function tosolution(numberaa, numberbb, numbercc) {
