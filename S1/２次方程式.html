@@ -110,13 +110,14 @@
 
 <body>
     <div id="start-screen">
-        <h1>２次方程式のクイズ</h1>
+        <h1>2次方程式のクイズ</h1>
         <h2>3問連続で正解しましょう！</h2>
         <h2>レベルを選択してください</h2>
         <button onclick="startQuiz(1)">レベル1</button>
         <button onclick="startQuiz(2)">レベル2</button>
         <button onclick="startQuiz(3)">レベル3</button>
         <button onclick="startQuiz(4)">レベル4</button>
+        <button onclick="startQuiz(5)">レベル5</button>
     </div>
 
     <div id="quiz-screen">
@@ -189,6 +190,8 @@
                 generateProblem3();
             } else if (selectedLevel === 4) {
                 generateProblem4();
+            } else if (selectedLevel === 5) {
+                generateProblem5();
             }
         }
 
@@ -255,7 +258,7 @@
                     xTerm = `${sign}${coeff}x`;
                 }
 
-                // prod が 0 のときは項を表示しない（"+0" を出さない）
+                // prod が 0 のときは項を表示しない（"+0" を出さない)
                 const cTerm = (prod === 0) ? '' : (prod < 0 ? '-' + Math.abs(prod) : '+' + prod);
 
                 const question = `\\( x^2${xTerm}${cTerm}=0 \\)`;
@@ -763,14 +766,326 @@
             }
         }
 
+        function generateProblem5() {
+            let frag = [];
+            generateProblem();
+            function tosolution(numberaa, numberbb, numbercc) {
+                let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
+                let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
+                let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
+
+                if (numberb % 2 == 0) {
+                    let bb = numberb / 2;
+                    let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                    if (numbera == 1) {
+                        return `${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}`;
+                    } else {
+                        return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}`;
+                    }
+                }
+                else {
+                    let bb = numberb;
+                    let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                    return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}`;
+                }
+            }
+            function divideBygcb(a, b, c, d) {
+                const lcmValue = gcdOfThree(a, b, c);
+                return d / lcmValue;
+            }
+            function gcdOfThree(a, b, c) {
+                // 三つの数の最大公約数を求める
+                return gcd(gcd(a, b), c);
+            }
+            function tosqrt(number) {
+                let ans = [];
+                ans[0] = 1;
+                ans[1] = number;
+                for (let i = 1; i <= Math.sqrt(ans[1]); i++) {
+                    if (ans[1] % (i * i) === 0) {
+                        ans[0] = ans[0] * i;
+                        ans[1] = ans[1] / (i * i);
+                        i = 1;
+                    }
+                }
+                return ans; // 平方数がない場合
+            }
+
+            function areCoprime(num1, num2) {
+                return gcd(num1, num2) === 1 ? 1 : 0;
+            }
+            function toFraction(numerator, denominator) {
+                const commonDivisor = gcd(numerator, denominator);
+                numerator /= commonDivisor;
+                denominator /= commonDivisor;
+
+                if (denominator < 0) { // 分母が負の場合、符号を分子に移す
+                    numerator *= -1;
+                    denominator *= -1;
+                }
+
+                if (denominator === 1) return `${numerator}`;
+                const sign = numerator < 0 ? '-' : ''; // 符号を明示的に扱う
+                return `${sign}\\frac{${Math.abs(numerator)}}{${Math.abs(denominator)}}`;
+            }
+
+            // ここから追加：同じ解かどうかを判定（同一なら1を返す）
+            function checksolution(a, b, c) {
+                try {
+                    const candidate = `x=${tosolution(a, b, c)}`;
+                    // 簡易正規化：空白を除去して比較
+                    const normalize = s => String(s).replace(/\s+/g, '');
+                    if (typeof currentSolution === 'string' && normalize(candidate) === normalize(currentSolution)) {
+                        return 1;
+                    }
+                } catch (e) {
+                    // tosolution 呼び出しで問題が出たら重複扱いにしない
+                }
+                return 0;
+            }
+            function generateProblem() {
+                p = getRandomInt(1, 2);
+                if (p == 1) {
+                    let a, b, c, d;
+                    do {
+                        a = getRandomInt(1, 8);
+                        b = getRandomInt(1, 8);
+                        c = getRandomInt(1, 8);
+                        d = 1;
+                    } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0)
+                    frag[0] = a;
+                    frag[1] = b;
+                    frag[2] = c;
+                    let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0\\)`;
+                    result = `x=${tosolution(a, b, c)}`;
+                    const answer = `${result}`;
+                    // ...existing code...
+
+
+                    currentSolution = answer;
+                    const options = generateOptions(currentSolution);
+
+                    document.getElementById('problem').innerHTML = question;
+                    document.getElementById('solution').innerHTML = '';
+
+                    // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                    const optionsContainer = document.getElementById('options');
+                    optionsContainer.innerHTML = '';
+                    options.forEach((option, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option';
+                        btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                        btn.addEventListener('click', () => {
+                            // checkAnswer(option, currentSolution, explanation) を使えば
+                            // checkAnswer 側で説明を表示する仕組みになっている想定
+                            checkAnswer(option, currentSolution, midwayceremony);
+                        });
+                        optionsContainer.appendChild(btn);
+                    });
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                }
+                else {
+
+                    let a, b, c, d;
+                    a = getRandomInt(1, 4);
+                    c = getRandomInt(1, 4);
+                    abtimes = a * c;
+                    const g = getRandomInt(1, 2);
+                    const h = getRandomInt(1, 2);
+                    do {
+                        if (g == 1) {
+                            b = getRandomInt(1, 6);
+                        } else {
+                            b = getRandomInt(-6, -1);
+                        }
+                    } while (a != 1 && areCoprime(a, Math.abs(b)) == 0)
+                    do {
+                        if (h == 1) {
+                            d = getRandomInt(1, 6);
+                        } else {
+                            d = getRandomInt(-6, -1);
+                        }
+                    } while (c != 1 && areCoprime(c, Math.abs(d)) == 0)
+
+                    if (c > a) {
+                        [a, c] = [c, a];
+                        [b, d] = [d, b];
+                    }
+                    if (a == c && d > b) {
+                        [b, d] = [d, b];
+                    }
+                    frag[0] = a * b;
+                    frag[1] = b;
+                    frag[2] = c * d;
+
+                    const e = -(a * d + b * c);
+                    const f = b * d;
+                    let question = `${a * c == 1 ? '' : a * c}  x^2 ${e === 0 ? '' : (e > 0 ? '+' : '') + (e == 1 ? '' : e == -1 ? '-' : e) + 'x'} ${f === 0 ? '' : (f > 0 ? '+' : '-') + Math.abs(f)} =0`;
+
+                    if (toFraction(b, a) == toFraction(d, c)) {
+                        result = `x=${toFraction(b, a)}`;
+                    } else {
+                        result = `x=${toFraction(b, a)},${toFraction(d, c)}`;
+                    }
+                    const answer = `${result}`;
+                    // ...existing code...
+
+
+                    currentSolution = answer;
+                    const options = generateOptions(currentSolution);
+
+                    document.getElementById('problem').innerHTML = question;
+                    document.getElementById('solution').innerHTML = '';
+
+                    // ボタンは DOM 要素で作り、クリック時に checkAnswer を呼ぶ（エスケープ問題回避）
+                    const optionsContainer = document.getElementById('options');
+                    optionsContainer.innerHTML = '';
+                    options.forEach((option, index) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'option';
+                        btn.innerHTML = `${index + 1}: $$${option}$$`; // MathJax 表示を想定
+                        btn.addEventListener('click', () => {
+                            // checkAnswer(option, currentSolution, explanation) を使えば
+                            // checkAnswer 側で説明を表示する仕組みになっている想定
+                            checkAnswer(option, currentSolution, midwayceremony);
+                        });
+                        optionsContainer.appendChild(btn);
+                    });
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+
+                }
+            }
+
+            function generateOptions(correct) {
+                const wrongOptions = [];
+                const wrongOptionssolution = [];
+                let Problemk = 0;//解答の試行回数
+                let a = 0;
+                let c = 0;
+                let b, d;
+                for (let i = 1; i * i <= Math.abs(frag[0]); i++) {
+                    if ((frag[0]) % i == 0) {
+                        c = i;
+                        a = frag[0] / i;
+                        for (let j = 1; j * j <= Math.abs(frag[2]); j++) {
+                            if ((frag[2]) % j == 0) {
+                                d = j;
+                                b = frag[2] / j;
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    let wrongOption;
+                                    if (toFraction(b, a) == toFraction(d, c)) {
+                                        wrongOption = `x=${toFraction(b, a)}`;
+                                    } else {
+                                        wrongOption = `x=${toFraction(b, a)},${toFraction(d, c)}`;
+                                    }
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                            }
+                            [b, d] = [d, b];
+                            if (a != c) {
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    if (toFraction(b, a) == toFraction(d, c)) {
+                                        wrongOption = `x=${toFraction(b, a)}`;
+                                    } else {
+                                        wrongOption = `x=${toFraction(b, a)},${toFraction(d, c)}`;
+                                    }
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                            }
+                            [b, d] = [-d, -b];
+                            if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                if (toFraction(b, a) == toFraction(d, c)) {
+                                    wrongOption = `x=${toFraction(b, a)}`;
+                                } else {
+                                    wrongOption = `x=${toFraction(b, a)},${toFraction(d, c)}`;
+                                }
+                                if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                    wrongOptions.push(wrongOption);
+                                }
+                            }
+                            [b, d] = [d, b];
+                            if (a != c) {
+                                if ((a == 1 || areCoprime(a, Math.abs(b)) == 1) && (c == 1 || areCoprime(c, Math.abs(d)) == 1)) {
+                                    if (toFraction(b, a) == toFraction(d, c)) {
+                                        wrongOption = `x=${toFraction(b, a)}`;
+                                    } else {
+                                        wrongOption = `x=${toFraction(b, a)},${toFraction(d, c)}`;
+                                    }
+                                    if (wrongOptions.indexOf(wrongOption) === -1 && wrongOption != correct) {
+                                        wrongOptions.push(wrongOption);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                do {
+                    do {
+                        a = getRandomInt(1, 8);
+                        b = getRandomInt(1, 8);
+                        c = getRandomInt(1, 8);
+                    } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0)
+                } while (checksolution(a, b, c) == 1)
+                wrongOptionssolution.push(`x=${tosolution(a, b, c)}`);
+                do {
+                    do {
+                        a = getRandomInt(1, 8);
+                        b = getRandomInt(1, 8);
+                        c = getRandomInt(1, 8);
+                    } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0)
+                    wrongOption = `x=${tosolution(a, b, c)}`;
+                } while (checksolution(a, b, c) == 1 || wrongOptionssolution.indexOf(wrongOption) != -1)
+                wrongOptionssolution.push(wrongOption);
+                return shuffle(correct, wrongOptions, wrongOptionssolution);
+
+            }
+
+        }
+
+        function shuffle(correct, wrongs1, wrongs2) {
+            // wrongs1, wrongs2 を結合して重複を除き、正解を含めて最大4つの選択肢を作る
+            const pool = [];
+            if (Array.isArray(wrongs1)) pool.push(...wrongs1);
+            if (Array.isArray(wrongs2)) pool.push(...wrongs2);
+
+            // 一意化して正解を除外
+            const uniq = Array.from(new Set(pool)).filter(x => x !== correct);
+
+            const result = [correct];
+
+            // ランダムに選んで最大4つにする
+            while (result.length < 4 && uniq.length > 0) {
+                const idx = Math.floor(Math.random() * uniq.length);
+                result.push(uniq.splice(idx, 1)[0]);
+            }
+
+            // 足りなければランダムな簡易候補で埋める（重複回避）
+            let attempts = 0;
+            while (result.length < 4 && attempts < 100) {
+                const cand = `x=${getRandomInt(-8, 8)}`;
+                if (!result.includes(cand) && cand !== correct) result.push(cand);
+                attempts++;
+            }
+
+            return shuffleArray(result);
+        }
+
 
         function checkAnswer(selected, correct, midway) {
             const isCorrect = selected.trim() === correct.trim();
-            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/circ/g, '\\circ');
-            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/circ/g, '\\circ');
+
+            // LaTeX コマンドは既にエスケープ済みなので、置換処理を削除
+            // または、必要に応じて正規化処理のみ行う
+            let displayCorrect = correct;
+            let displaySelected = selected;
+
             document.getElementById("solution").innerHTML = isCorrect
                 ? '正解です！'
-                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+                : `\\( ${displaySelected} \\)は不正解です。<br>${midway}正しい答えは: \\( ${displayCorrect} \\)`;
 
             if (isCorrect) {
                 correctCount++;
@@ -819,8 +1134,8 @@
         window.onload = () => {
             document.getElementById("start-screen").style.display = "block";
         };
+
     </script>
 </body>
-
 
 </html>
