@@ -145,7 +145,14 @@
         <h1>終了画面</h1>
         <p>お疲れ様でした！</p>
         <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
-        <button onclick="resetQuiz()">再スタート</button>
+
+        <h2>レベルを選択してください</h2>
+        <button onclick="resetQuiz(1)">レベル1(因数分解)</button>
+        <button onclick="resetQuiz(2)">レベル2(たすき掛け)</button>
+        <button onclick="resetQuiz(3)">レベル3(解の公式)</button>
+        <button onclick="resetQuiz(4)">レベル4(解の公式：約分あり)</button>
+        <button onclick="resetQuiz(5)">レベル5(解の公式：複雑)</button>
+        <button onclick="resetQuiz(6)">レベル6(解の公式：ランダム)</button>
     </div>
 
     <script src="math.js"></script>
@@ -1292,11 +1299,12 @@
             document.getElementById("elapsedTime").innerText = timeLeft;
         }
 
-        function resetQuiz() {
+        function resetQuiz(level) {
+            selectedLevel = level;  // 選択されたレベルを保存
             correctCount = 0;
             timeLeft = 0;
             document.getElementById("end-screen").style.display = "none";
-            startQuiz();
+            startQuiz(level); // <-- 修正：引数 level を渡す       
         }
 
 
