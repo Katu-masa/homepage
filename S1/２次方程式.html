@@ -1108,7 +1108,7 @@
 
                     const e = -(a * d + b * c);
                     const f = b * d;
-                    let question = `${a * c == 1 ? '' : a * c}  x^2 ${e === 0 ? '' : (e > 0 ? '+' : '') + (e == 1 ? '' : e == -1 ? '-' : e) + 'x'} ${f === 0 ? '' : (f > 0 ? '+' : '-') + Math.abs(f)} =0`;
+                    let question = `\\(${a * c == 1 ? '' : a * c}  x^2 ${e === 0 ? '' : (e > 0 ? '+' : '') + (e == 1 ? '' : e == -1 ? '-' : e) + 'x'} ${f === 0 ? '' : (f > 0 ? '+' : '-') + Math.abs(f)} =0\\)`;
 
                     if (toFraction(b, a) == toFraction(d, c)) {
                         result = `x=${toFraction(b, a)}`;
