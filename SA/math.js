@@ -248,7 +248,7 @@ function printfrac(fracc) {
     }
 
     if (pfrac[1] == 1 || frac[0] == 0) {
-        return `${pfrac[0]} `;
+        return `${pfrag}${pfrac[0]} `;
     }
     else {
         return `${pfrag} \\frac\{ ${pfrac[0]} \ } \{ ${pfrac[1]} \ } `;
@@ -285,3 +285,4 @@ function showRandomKanji(num) {
     const kanji = kansuji[num];
     return kanji;
 }
+
