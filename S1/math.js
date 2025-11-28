@@ -1,4 +1,3 @@
-
 function tosin(angle) {
     let ans = [];
     if (angle == 0) {
@@ -243,4 +242,5 @@ function printfrac(fracc) {
         return `${pfrag} \\frac\{ ${pfrac[0]} \ } \{ ${pfrac[1]} \ } `;
     }
 }
+
 
