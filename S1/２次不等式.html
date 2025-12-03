@@ -288,11 +288,11 @@
                 // 💡修正点: Canvas描画の代わりにDOM要素を生成して追加
                 if (labelContainer) {
                     // 左側のラベル
-                    const leftLabel = createMathJaxLabel(-2.7, leftValue, centerX, centerY, scale);
+                    const leftLabel = createMathJaxLabel(-3, leftValue, centerX, centerY, scale);
                     labelContainer.appendChild(leftLabel);
 
                     // 右側のラベル
-                    const rightLabel = createMathJaxLabel(2.5, rightValue, centerX, centerY, scale);
+                    const rightLabel = createMathJaxLabel(3.2, rightValue, centerX, centerY, scale);
                     labelContainer.appendChild(rightLabel);
                 }
 
@@ -716,7 +716,44 @@
         function generateProblem3() {
             let frag = [];
             generateProblem();
-            function tosolution(numberaa, numberbb, numbercc) {
+            function tosolution(numberaa, numberbb, numbercc, f) {
+                let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
+                let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
+                let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
+                if (f == 1 || f == 2) {
+                    if (numberb % 2 == 0) {
+                        let bb = numberb / 2;
+                        let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                        if (numbera == 1) {
+                            return `${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} ${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}`;
+                        } else {
+                            return `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}`;
+                        }
+                    }
+                    else {
+                        let bb = numberb;
+                        let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                        return `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}`;
+                    }
+                }
+                else {
+                    if (numberb % 2 == 0) {
+                        let bb = numberb / 2;
+                        let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                        if (numbera == 1) {
+                            return `x ${f == 3 ? '<' : '\\leqq'} ${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} , ${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} ${f == 3 ? '<' : '\\leqq'} x `;
+                        } else {
+                            return `x ${f == 3 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} , \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} ${f == 3 ? '<' : '\\leqq'} x `;
+                        }
+                    }
+                    else {
+                        let bb = numberb;
+                        let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                        return `x ${f == 3 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} , \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} ${f == 3 ? '<' : '\\leqq'} x `;
+                    }
+                }
+            }
+            function toprblemContet(numberaa, numberbb, numbercc) {
                 let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
                 let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
                 let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
@@ -725,16 +762,20 @@
                     let bb = numberb / 2;
                     let rootn = tosqrt(bb * bb - numbera * numberc)[0];
                     if (numbera == 1) {
-                        return `${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}`;
+                        problemContext.x1 = `${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}  `;
+                        problemContext.x2 = `${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}  `;
                     } else {
-                        return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}`;
+                        problemContext.x1 = `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}  `;
+                        problemContext.x2 = `\\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}  `;
                     }
                 }
                 else {
                     let bb = numberb;
                     let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
-                    return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}`;
+                    problemContext.x1 = `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} `;
+                    problemContext.x2 = `\\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}  `;
                 }
+
             }
             function divideBygcb(a, b, c, d) {
                 const lcmValue = gcdOfThree(a, b, c);
@@ -759,6 +800,7 @@
             }
             function generateProblem() {
 
+                let fraga = getRandomInt(1, 4);
                 let a, b, c;
                 do {
                     a = 1;
@@ -769,16 +811,38 @@
                 frag[0] = a;
                 frag[1] = b;
                 frag[2] = c;
-                let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0\\)`;
-                currentSolution = `x=${tosolution(a, b, c)}`;
+
+                let fragsignal = ``;
+                if (fraga == 1) {
+                    fragsignal = `<`;
+                    problemContext.colorFlag = 2; // frag 1 (<) -> y < 0 -> FLAG 2 (下側を強調)
+                }
+                else if (fraga == 2) {
+                    fragsignal = `\\leqq`;
+                    problemContext.colorFlag = 2; // frag 2 (<=) -> y <= 0 -> FLAG 2 (下側を強調)
+                }
+                else if (fraga == 3) {
+                    fragsignal = `>`;
+                    problemContext.colorFlag = 1; // frag 3 (>) -> y > 0 -> FLAG 1 (上側を強調)
+                }
+                else if (fraga == 4) {
+                    fragsignal = `\\geqq`;
+                    problemContext.colorFlag = 1; // frag 4 (>=) -> y >= 0 -> FLAG 1 (上側を強調)
+                }
+                toprblemContet(a, b, c);
+
+                let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}${fragsignal}0\\)`;
+                currentSolution = `${tosolution(a, b, c, fraga)}`;
                 const result = currentSolution;
                 const bAbs = Math.abs(b);
                 const cAbs = Math.abs(c);
                 const bDisplay = b < 0 ? `(${b})` : b;
                 const cDisplay = c < 0 ? `(${c})` : c;
                 const FDisplay = 4 * a * c < 0 ? `+${-4 * a * c}` : `-${4 * a * c}`;
-                midwayceremony = `解の公式を使うと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
-                =\\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}$$`;
+                midwayceremony = `$$${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0$$
+                を解の公式で解くと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
+                =\\frac{${-b}\\pm \\sqrt{${b * b - 4 * a * c}}}{${2 * a}}$$
+                <div id="graphPlaceholder"></div>`;
                 const answer = `${result}`;
 
                 currentSolution = answer;
@@ -821,13 +885,14 @@
                     // 整数の範囲で乱数を生成
                     let a, b, c;
                     let value;
+                    let f = getRandomInt(1, 4);
                     do {
                         a = 1;
                         b = 2 * getRandomInt(-4, 5) - 1;
                         c = getRandomInt(-8, 8);
                     } while (b * b - 4 * a * c < 0 || Math.sqrt(b * b - 4 * a * c) % 1 == 0);
 
-                    value = `x=${tosolution(a, b, c)}`;
+                    value = `${tosolution(a, b, c, f)}`;
 
                     // 正規化してから重複チェック
                     const normalizedValue = normalizeValue(value);
@@ -844,7 +909,44 @@
         function generateProblem4() {
             let frag = [];
             generateProblem();
-            function tosolution(numberaa, numberbb, numbercc) {
+            function tosolution(numberaa, numberbb, numbercc, f) {
+                let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
+                let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
+                let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
+                if (f == 1 || f == 2) {
+                    if (numberb % 2 == 0) {
+                        let bb = numberb / 2;
+                        let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                        if (numbera == 1) {
+                            return `${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} ${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}`;
+                        } else {
+                            return `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}`;
+                        }
+                    }
+                    else {
+                        let bb = numberb;
+                        let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                        return `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} ${f == 1 ? '<' : '\\leqq'} x ${f == 1 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}`;
+                    }
+                }
+                else {
+                    if (numberb % 2 == 0) {
+                        let bb = numberb / 2;
+                        let rootn = tosqrt(bb * bb - numbera * numberc)[0];
+                        if (numbera == 1) {
+                            return `x ${f == 3 ? '<' : '\\leqq'} ${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} , ${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} ${f == 3 ? '<' : '\\leqq'} x `;
+                        } else {
+                            return `x ${f == 3 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} , \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}} ${f == 3 ? '<' : '\\leqq'} x `;
+                        }
+                    }
+                    else {
+                        let bb = numberb;
+                        let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
+                        return `x ${f == 3 ? '<' : '\\leqq'} \\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} , \\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} ${f == 3 ? '<' : '\\leqq'} x `;
+                    }
+                }
+            }
+            function toprblemContet(numberaa, numberbb, numbercc) {
                 let numbera = divideBygcb(numberaa, numberbb, numbercc, numberaa);
                 let numberb = divideBygcb(numberaa, numberbb, numbercc, numberbb);
                 let numberc = divideBygcb(numberaa, numberbb, numbercc, numbercc);
@@ -853,15 +955,18 @@
                     let bb = numberb / 2;
                     let rootn = tosqrt(bb * bb - numbera * numberc)[0];
                     if (numbera == 1) {
-                        return `${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}`;
+                        problemContext.x1 = `\\scriptstyle{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} } `;
+                        problemContext.x2 = `${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}}  `;
                     } else {
-                        return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}`;
+                        problemContext.x1 = `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}  `;
+                        problemContext.x2 = `\\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - numbera * numberc)[1]}} }{${numbera}}  `;
                     }
                 }
                 else {
                     let bb = numberb;
                     let rootn = tosqrt(bb * bb - 4 * numbera * numberc)[0];
-                    return `\\frac{${bb == 0 ? '' : -1 * bb}\\pm ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}`;
+                    problemContext.x1 = `\\frac{${bb == 0 ? '' : -1 * bb}- ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}} `;
+                    problemContext.x2 = `\\frac{${bb == 0 ? '' : -1 * bb}+ ${rootn == 1 ? '' : rootn}\\sqrt{ ${tosqrt(bb * bb - 4 * numbera * numberc)[1]}}}{${2 * numbera}}  `;
                 }
             }
             function divideBygcb(a, b, c, d) {
@@ -887,6 +992,7 @@
             }
             function generateProblem() {
 
+                let fraga = getRandomInt(1, 4);
                 let a, b, c;
                 do {
                     a = 1;
@@ -897,8 +1003,27 @@
                 frag[0] = a;
                 frag[1] = b;
                 frag[2] = c;
-                let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0\\)`;
-                currentSolution = `x=${tosolution(a, b, c)}`;
+                let fragsignal = ``;
+                if (fraga == 1) {
+                    fragsignal = `<`;
+                    problemContext.colorFlag = 2; // frag 1 (<) -> y < 0 -> FLAG 2 (下側を強調)
+                }
+                else if (fraga == 2) {
+                    fragsignal = `\\leqq`;
+                    problemContext.colorFlag = 2; // frag 2 (<=) -> y <= 0 -> FLAG 2 (下側を強調)
+                }
+                else if (fraga == 3) {
+                    fragsignal = `>`;
+                    problemContext.colorFlag = 1; // frag 3 (>) -> y > 0 -> FLAG 1 (上側を強調)
+                }
+                else if (fraga == 4) {
+                    fragsignal = `\\geqq`;
+                    problemContext.colorFlag = 1; // frag 4 (>=) -> y >= 0 -> FLAG 1 (上側を強調)
+                }
+                toprblemContet(a, b, c);
+
+                let question = `\\(${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}${fragsignal}0\\)`;
+                currentSolution = `${tosolution(a, b, c, fraga)}`;
                 const result = currentSolution;
                 const bAbs = Math.abs(b);
                 const cAbs = Math.abs(c);
@@ -909,10 +1034,13 @@
                 printsqrt[0] = 1;
                 printsqrt[1] = b * b - 4 * a * c;
                 printsqrt = simplsqrt(printsqrt);
-                midwayceremony = `解の公式を使うと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
-                =\\frac{${-b}\\pm \\sqrt{${b * b}  ${FDisplay}}}{${2 * a}}\\\\
+                midwayceremony = `$$${a == 1 ? '' : a}  x^2 ${b === 0 ? '' : (b > 0 ? '+' : '') + (b == 1 ? '' : b == -1 ? '-' : b) + 'x'} ${c === 0 ? '' : (c > 0 ? '+' : '-') + Math.abs(c)}=0$$
+                を解の公式で解くと$$x=\\frac{-${bDisplay}\\pm \\sqrt{${bDisplay}^2 - 4 \\times ${a}\\times ${cDisplay}}}{2\\times ${a}}\\\\ 
                 =\\frac{${-b}\\pm \\sqrt{${b * b - 4 * a * c}}}{${2 * a}}\\\\
-                =\\frac{${-b}\\pm ${printfrac([printsqrt[0], printsqrt[1], 1, 1])}}{${2 * a}}$$`;
+                =\\frac{${-b}\\pm ${printfrac([printsqrt[0], printsqrt[1], 1, 1])}}{${2 * a}}\\\\
+                =${-b / 2}\\pm ${printfrac([printsqrt[0], printsqrt[1], 2, 1])}$$
+                <div id="graphPlaceholder"></div>`;
+
                 const answer = `${result}`;
                 // ...existing code...
 
@@ -1554,6 +1682,5 @@
 
     </script>
 </body>
-
 
 </html>
