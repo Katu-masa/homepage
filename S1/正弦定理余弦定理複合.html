@@ -597,9 +597,20 @@
 
         function endQuiz() {
             clearInterval(timerInterval);
+            const finalTime = timeLeft;
+            const comment = getClearComment(finalTime);
             document.getElementById("quiz-screen").style.display = "none";
             document.getElementById("end-screen").style.display = "block";
-            document.getElementById("elapsedTime").innerText = timeLeft;
+            document.getElementById("clearedLevel").innerText = selectedLevel;
+            document.getElementById("elapsedTime").innerText = finalTime; // 経過時間をセット
+            let commentElement = document.getElementById("clearComment");
+            if (!commentElement) {
+                commentElement = document.createElement('p');
+                commentElement.id = 'clearComment';
+                document.getElementById('end-screen').appendChild(commentElement); // end-screenの最後に挿入
+            }
+            commentElement.innerHTML = `<strong>クリア評価: ${comment}</strong>`;
+            correctCount = 0; // 正解数をリセット
         }
 
         function resetQuiz() {
@@ -637,4 +648,5 @@
 </body>
 
 </html>
+
 
