@@ -1297,12 +1297,18 @@
 
         function endQuiz() {
             clearInterval(timerInterval);
+
+            // 💡追加: クリアコメントを取得
             const finalTime = timeLeft;
             const comment = getClearComment(finalTime);
+
             document.getElementById("quiz-screen").style.display = "none";
             document.getElementById("end-screen").style.display = "block";
+
             document.getElementById("clearedLevel").innerText = selectedLevel;
             document.getElementById("elapsedTime").innerText = finalTime; // 経過時間をセット
+
+            // 💡追加: コメントを表示する新しい要素を生成または既存要素に追加
             let commentElement = document.getElementById("clearComment");
             if (!commentElement) {
                 commentElement = document.createElement('p');
@@ -1310,6 +1316,7 @@
                 document.getElementById('end-screen').appendChild(commentElement); // end-screenの最後に挿入
             }
             commentElement.innerHTML = `<strong>クリア評価: ${comment}</strong>`;
+
             correctCount = 0; // 正解数をリセット
         }
 
@@ -1333,7 +1340,15 @@
             }
             return array;
         }
-
+        function getClearComment(time) {
+            if (time <= 30) {
+                return "★★★　　完璧です！";
+            } else if (time <= 60) {
+                return "★★　　まだまだ早く解けるよ";
+            } else {
+                return "★　　もっと解いてマスターしよう"; // 60秒超の場合のコメントも追加しました
+            }
+        }
         window.onload = () => {
             document.getElementById("start-screen").style.display = "block";
         };
@@ -1342,4 +1357,3 @@
 </body>
 
 </html>
-
