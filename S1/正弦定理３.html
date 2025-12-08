@@ -264,7 +264,15 @@
             }
             return array;
         }
-
+        function getClearComment(time) {
+            if (time <= 30) {
+                return "★★★　　完璧です！";
+            } else if (time <= 60) {
+                return "★★　　まだまだ早く解けるよ";
+            } else {
+                return "★　　もっと解いてマスターしよう"; // 60秒超の場合のコメントも追加しました
+            }
+        }
         window.onload = () => {
             document.getElementById("start-screen").style.display = "block";
         };
@@ -272,4 +280,5 @@
 </body>
 
 </html>
+
 
