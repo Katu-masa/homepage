@@ -106,6 +106,7 @@
         <h1>終了画面</h1>
         <p>お疲れ様でした！</p>
         <p>5問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <p id="clearComment"></p>
         <button onclick="resetQuiz()">再スタート</button>
     </div>
 
@@ -207,12 +208,13 @@
             let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
             document.getElementById("solution").innerHTML = isCorrect
                 ? '正解です！'
-                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+                : `\\( ${escapedSelected} \\)は不正解です。20秒のペナルティ。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
 
             if (isCorrect) {
                 correctCount++;
             } else {
                 correctCount = 0;
+                timeLeft += 20;
             }
 
             if (correctCount === 5) {
@@ -227,9 +229,20 @@
 
         function endQuiz() {
             clearInterval(timerInterval);
+            const finalTime = timeLeft;
+            const comment = getClearComment(finalTime);
             document.getElementById("quiz-screen").style.display = "none";
             document.getElementById("end-screen").style.display = "block";
-            document.getElementById("elapsedTime").innerText = timeLeft;
+            document.getElementById("clearedLevel").innerText = selectedLevel;
+            document.getElementById("elapsedTime").innerText = finalTime; // 経過時間をセット
+            let commentElement = document.getElementById("clearComment");
+            if (!commentElement) {
+                commentElement = document.createElement('p');
+                commentElement.id = 'clearComment';
+                document.getElementById('end-screen').appendChild(commentElement); // end-screenの最後に挿入
+            }
+            commentElement.innerHTML = `<strong>クリア評価: ${comment}</strong>`;
+            correctCount = 0; // 正解数をリセット
         }
 
         function resetQuiz() {
@@ -259,3 +272,4 @@
 </body>
 
 </html>
+
