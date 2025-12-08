@@ -107,6 +107,7 @@
         <h1>終了画面</h1>
         <p>お疲れ様でした！</p>
         <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <p id="clearComment"></p>
         <button onclick="resetQuiz()">再スタート</button>
     </div>
 
@@ -574,12 +575,13 @@
             let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
             document.getElementById("solution").innerHTML = isCorrect
                 ? '正解です！'
-                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+                : `\\( ${escapedSelected} \\)は不正解です。20秒のペナルティ。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
 
             if (isCorrect) {
                 correctCount++;
             } else {
                 correctCount = 0;
+                timeLeft += 20;
             }
 
             if (correctCount === 3) {
@@ -619,7 +621,15 @@
             }
             return array;
         }
-
+        function getClearComment(time) {
+            if (time <= 30) {
+                return "★★★　　完璧です！";
+            } else if (time <= 60) {
+                return "★★　　まだまだ早く解けるよ";
+            } else {
+                return "★　　もっと解いてマスターしよう"; // 60秒超の場合のコメントも追加しました
+            }
+        }
         window.onload = () => {
             document.getElementById("start-screen").style.display = "block";
         };
@@ -627,3 +637,4 @@
 </body>
 
 </html>
+
