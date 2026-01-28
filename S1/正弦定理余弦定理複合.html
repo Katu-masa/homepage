@@ -12,6 +12,8 @@
             margin-top: 50px;
         }
 
+
+
         #problem {
             word-wrap: break-word;
             /* 古いブラウザ向け */
@@ -79,7 +81,16 @@
     <div id="start-screen">
         <h1>正弦・余弦定理のクイズ</h1>
         <h2>3問連続で正解しましょう！</h2>
-        <button onclick="startQuiz()">スタート</button>
+        <p>レベルを選択してください（ボタンを押すと選択と同時に開始します）：</p>
+        <div>
+            <button class="level-button" data-level="3" onclick="setLevel(3)">正弦定理1</button>
+            <button class="level-button" data-level="4" onclick="setLevel(4)">正弦定理2</button>
+            <button class="level-button" data-level="5" onclick="setLevel(5)">正弦定理3</button>
+            <button class="level-button" data-level="1" onclick="setLevel(1)">余弦定理1</button>
+            <button class="level-button" data-level="2" onclick="setLevel(2)">余弦定理2</button>
+            <button class="level-button" data-level="6" onclick="setLevel(6)">ランダム</button>
+        </div>
+
     </div>
 
     <div id="quiz-screen">
@@ -107,13 +118,47 @@
         <h1>終了画面</h1>
         <p>お疲れ様でした！</p>
         <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
-        <p id="clearComment"></p>
-        <button onclick="resetQuiz()">再スタート</button>
+        <p>レベルを選んで再チャレンジしてください（ボタンを押すと開始します）：</p>
+        <div>
+            <button class="level-button" data-level="3" onclick="setLevel(3)">正弦定理1</button>
+            <button class="level-button" data-level="4" onclick="setLevel(4)">正弦定理2</button>
+            <button class="level-button" data-level="5" onclick="setLevel(5)">正弦定理3</button>
+            <button class="level-button" data-level="1" onclick="setLevel(1)">余弦定理1</button>
+            <button class="level-button" data-level="2" onclick="setLevel(2)">余弦定理2</button>
+            <button class="level-button" data-level="6" onclick="setLevel(6)">ランダム</button>
+        </div>
     </div>
 
     <script src="math.js"></script>
     <script>
+        // 選択されたレベル。既定は6（ランダム）
+        let selectedLevel = 6;
 
+        // レベルボタンを有効/無効にする
+        function enableLevelButtons(enable) {
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.disabled = enable ? false : true;
+            });
+        }
+
+        // ボタン押下で選択と同時に開始する
+        function setLevel(n) {
+            selectedLevel = n;
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.classList.toggle('selected', Number(btn.dataset.level) === n);
+            });
+            // 再押下を防ぐため、押したらすぐ無効化（画面は切り替わる）
+            enableLevelButtons(false);
+            // スタート画面/終了画面を閉じて開始
+            startQuiz();
+        }
+
+        // 起動時 / スタート画面表示時に既定レベルだけハイライト（自動開始はしない）
+        function highlightLevel(n) {
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.classList.toggle('selected', Number(btn.dataset.level) === n);
+            });
+        }
         // 初期設定でキャンバスサイズを変更
         resizeCanvas();
 
@@ -142,9 +187,13 @@
                 document.getElementById("currentC").innerText = correctCount;
             }, 1000);
         }
-
         function nextProblem() {
-            shuffleProblem = getRandomInt(1, 5)
+            if (selectedLevel >= 1 && selectedLevel <= 5) {
+                shuffleProblem = selectedLevel;
+            } else {
+                shuffleProblem = getRandomInt(1, 5);
+            }
+
             if (shuffleProblem == 1) {
                 generateProblem1();
             }
@@ -347,7 +396,7 @@
                 let sideA = [getRandomInt(1, 6), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
                 const arcsinA = [sinA[2], sinA[3], sinA[0], sinA[1]];
                 // 問題文を生成
-                let question = `次のような\\( \\bigtriangleup ABC \\) において、<br>外接円の半径Rを求めよ<br>\\(  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}}  \\)`;
+                let question = `次のような\\bigtriangleup ABC において、<br>外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
                 let answer = times(sideA, arcsinA);
                 answer = times(answer, [1, 1, 2, 1]);
                 answer = rationalize(answer);
@@ -394,7 +443,7 @@
                     midway = midway + `${printfrac(rationalize(sidetimearcsin))} &=& 2R`;
                 }
                 midwayceremony = `正弦定理\\( \\frac{a}{\\sin A} = 2R \\)を使う。\\begin{eqnarray} \\frac{${printfrac(sideA)}}{${printfrac(sinA)}} &=& 2R \\\\ ${midway}\\end{eqnarray}`;
-                document.getElementById("problem").innerHTML = question ;
+                document.getElementById("problem").innerHTML = '$$' + question + '$$';
                 document.getElementById("solution").innerHTML = '';
                 document.getElementById("options").innerHTML = options.map((option, index) =>
                     `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')">${index + 1}: $$${option}$$</button>`
@@ -575,13 +624,12 @@
             let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
             document.getElementById("solution").innerHTML = isCorrect
                 ? '正解です！'
-                : `\\( ${escapedSelected} \\)は不正解です。20秒のペナルティ。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
 
             if (isCorrect) {
                 correctCount++;
             } else {
                 correctCount = 0;
-                timeLeft += 20;
             }
 
             if (correctCount === 3) {
@@ -594,32 +642,28 @@
             MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
         }
 
-
         function endQuiz() {
             clearInterval(timerInterval);
-            const finalTime = timeLeft;
-            const comment = getClearComment(finalTime);
             document.getElementById("quiz-screen").style.display = "none";
             document.getElementById("end-screen").style.display = "block";
-            document.getElementById("clearedLevel").innerText = selectedLevel;
-            document.getElementById("elapsedTime").innerText = finalTime; // 経過時間をセット
-            let commentElement = document.getElementById("clearComment");
-            if (!commentElement) {
-                commentElement = document.createElement('p');
-                commentElement.id = 'clearComment';
-                document.getElementById('end-screen').appendChild(commentElement); // end-screenの最後に挿入
-            }
-            commentElement.innerHTML = `<strong>クリア評価: ${comment}</strong>`;
-            correctCount = 0; // 正解数をリセット
+            document.getElementById("elapsedTime").innerText = timeLeft;
+            // 終了時にレベル選択できるようにボタンを有効化
+            enableLevelButtons(true);
+            // ハイライトは現在の選択を維持
+            highlightLevel(selectedLevel);
         }
 
+        // スタート画面に戻してリセット（直接自動開始しない）
         function resetQuiz() {
+            clearInterval(timerInterval);
             correctCount = 0;
             timeLeft = 0;
             document.getElementById("end-screen").style.display = "none";
-            startQuiz();
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("start-screen").style.display = "block";
+            enableLevelButtons(true);
+            highlightLevel(selectedLevel);
         }
-
 
         function getRandomInt(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -632,21 +676,12 @@
             }
             return array;
         }
-        function getClearComment(time) {
-            if (time <= 30) {
-                return "★★★　　完璧です！";
-            } else if (time <= 60) {
-                return "★★　　まだまだ早く解けるよ";
-            } else {
-                return "★　　もっと解いてマスターしよう"; // 60秒超の場合のコメントも追加しました
-            }
-        }
+
         window.onload = () => {
             document.getElementById("start-screen").style.display = "block";
+            highlightLevel(selectedLevel);
         };
     </script>
 </body>
 
 </html>
-
-
