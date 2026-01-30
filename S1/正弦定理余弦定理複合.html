@@ -396,7 +396,7 @@
                 let sideA = [getRandomInt(1, 6), possibleSideA[Math.floor(Math.random() * possibleSideA.length)], 1, 1];
                 const arcsinA = [sinA[2], sinA[3], sinA[0], sinA[1]];
                 // 問題文を生成
-                let question = `次のような\\bigtriangleup ABC において、<br>外接円の半径Rを求めよ$$\\[  A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} \\] $$`;
+                let question = `次のような \\( \\bigtriangleup ABC  \\) において、<br>外接円の半径Rを求めよ $$ A=${angleA}^\\circ, a=${sideA[0] == 1 ? '' : sideA[0]} \\sqrt{${sideA[1]}} $$ `;
                 let answer = times(sideA, arcsinA);
                 answer = times(answer, [1, 1, 2, 1]);
                 answer = rationalize(answer);
@@ -427,10 +427,10 @@
                     answerfrac[1] = `${answer[2]}\\sqrt\{ ${answer[3]}\}`;
                 }
                 if (answerfrac[1] == 1) {
-                    currentSolution = `${answerfrac[0]}`
+                    currentSolution = `${answerfrac[0]}`;
                 }
                 else {
-                    currentSolution = `\\frac\{ ${answerfrac[0]}\} \{ ${answerfrac[1]}\}`
+                    currentSolution = `\\frac\{ ${answerfrac[0]}\} \{ ${answerfrac[1]}\}`;
                 }
                 const options = generateOptions(currentSolution);
                 //途中式作成
@@ -443,7 +443,7 @@
                     midway = midway + `${printfrac(rationalize(sidetimearcsin))} &=& 2R`;
                 }
                 midwayceremony = `正弦定理\\( \\frac{a}{\\sin A} = 2R \\)を使う。\\begin{eqnarray} \\frac{${printfrac(sideA)}}{${printfrac(sinA)}} &=& 2R \\\\ ${midway}\\end{eqnarray}`;
-                document.getElementById("problem").innerHTML = '$$' + question + '$$';
+                document.getElementById("problem").innerHTML = question;
                 document.getElementById("solution").innerHTML = '';
                 document.getElementById("options").innerHTML = options.map((option, index) =>
                     `<button class="option" onclick="checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')">${index + 1}: $$${option}$$</button>`
