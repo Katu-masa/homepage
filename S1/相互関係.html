@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>正弦・余弦定理のクイズ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+
+
+        #problem {
+            word-wrap: break-word;
+            /* 古いブラウザ向け */
+            overflow-wrap: break-word;
+            /* 最新のブラウザ向け */
+            white-space: normal;
+            /* 改行を有効化 */
+        }
+
+        #problem,
+        #solution,
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #options {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        #start-screen {
+            display: block;
+        }
+
+        #quiz-screen,
+        #end-screen {
+            display: none;
+        }
+
+        .paint-button {
+            display: inline-block;
+            margin: 20px 0;
+            font-size: 9px;
+            padding: 10px 20px;
+            width: 80px;
+            height: 40px;
+            background-color: #aaadaf;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .paint-button:hover {
+            background-color: #3c3d3e;
+        }
+
+        canvas {
+            border: 2px solid rgba(0, 0, 0, 0.2);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+
+<body>
+    <div id="start-screen">
+        <h1>正弦・余弦定理のクイズ</h1>
+        <h2>3問連続で正解しましょう！</h2>
+        <div>
+            <button class="level-button" data-level="6" onclick="setLevel(6)">スタート</button>
+        </div>
+
+    </div>
+
+    <div id="quiz-screen">
+        <div id="timer">経過時間: <span id="time">0</span>秒 連続正解数: <span id="currentC">0</span></div>
+        <div id="problem">ここに問題が表示されます</div>
+        <div id="options"></div>
+        <div id="solution"></div>
+
+        <h2>計算スペース</h2>
+        <div class="controls">
+            <button id="clearBtn" class="paint-button">クリア</button>
+            <button id="eraserBtn" class="paint-button">消しゴム</button>
+            <button id="penBtn" class="paint-button">ペン</button>
+            <label>
+                線の色:
+                <input type="color" id="colorPicker" value="#000000">
+            </label>
+        </div>
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+        <script src="paint.js"></script>
+
+    </div>
+
+    <div id="end-screen">
+        <h1>終了画面</h1>
+        <p>お疲れ様でした！</p>
+        <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <div>
+            <button class="level-button" data-level="6" onclick="setLevel(6)">再スタート</button>
+        </div>
+    </div>
+
+    <script src="math.js"></script>
+    <script>
+        // 選択されたレベル。既定は6（ランダム）
+        let selectedLevel = 6;
+
+        // レベルボタンを有効/無効にする
+        function enableLevelButtons(enable) {
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.disabled = enable ? false : true;
+            });
+        }
+
+        // ボタン押下で選択と同時に開始する
+        function setLevel(n) {
+            selectedLevel = n;
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.classList.toggle('selected', Number(btn.dataset.level) === n);
+            });
+            // 再押下を防ぐため、押したらすぐ無効化（画面は切り替わる）
+            enableLevelButtons(false);
+            // スタート画面/終了画面を閉じて開始
+            startQuiz();
+        }
+
+        // 起動時 / スタート画面表示時に既定レベルだけハイライト（自動開始はしない）
+        function highlightLevel(n) {
+            document.querySelectorAll('.level-button').forEach(btn => {
+                btn.classList.toggle('selected', Number(btn.dataset.level) === n);
+            });
+        }
+        // 初期設定でキャンバスサイズを変更
+        resizeCanvas();
+
+        // 画面リサイズ時にもキャンバスを調整
+        window.addEventListener("resize", resizeCanvas);
+
+
+        let currentSolution = '';
+        let correctCount = 0;
+        let timeLeft = 0;
+        let timerInterval;
+        let shuffleProblem = 0;
+        let midwayceremony = '';
+
+        function startQuiz() {
+            document.getElementById("start-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            nextProblem();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft++;
+                document.getElementById("time").innerText = timeLeft;
+                document.getElementById("currentC").innerText = correctCount;
+            }, 1000);
+        }
+        function nextProblem() {
+            shuffleProblem = getRandomInt(1, 6);
+            if (shuffleProblem == 1) {
+                generateProblem1();
+            }
+            else if (shuffleProblem == 2) {
+                generateProblem2();
+            }
+            else if (shuffleProblem == 3) {
+                generateProblem3();
+            }
+            else if (shuffleProblem == 4) {
+                generateProblem4();
+            }
+            else if (shuffleProblem == 5) {
+                generateProblem5();
+            }
+            else {
+                generateProblem6();
+            }
+        }
+
+        function generateProblem1() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let sinBB = getRandomInt(1, possibleSideA.length - 1);
+                let sinB = [1, possibleSideA[getRandomInt(0, sinBB - 1)], 1, possibleSideA[sinBB]];
+                sinB = simplsqrt(sinB);
+                sinB = simplfrac(sinB);
+                if (sinB[1] != 1 && sinB[3] != 1) {
+                    sinB = rationalize(sinB);
+                }
+                let sinC = [1, sinB[2] * sinB[2] * sinB[3] - sinB[0] * sinB[0] * sinB[1], sinB[2], sinB[3]];
+                sinC = simplsqrt(sinC);
+                sinC = simplfrac(sinC);
+                if (sinC[1] != 1 && sinC[3] != 1) {
+                    sinC = rationalize(sinC);
+                }
+                let answer = `${printfrac(sinC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\sin  \\theta = ${printfrac(sinB)} \\) であるとき、\\( \\cos \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, sinC);
+                midwayceremony = `\\( \\sin^2 \\theta + \\cos^2 \\theta = 1 \\) に代入すると、\\begin{eqnarray} \\left( ${printfrac(sinB)} \\right)^2 + \\cos^2 \\theta & = & 1 \\\\ \\cos^2 \\theta & = & 1 - ${printfrac(times(sinB, sinB))} \\\\ \\cos^2 \\theta & = & ${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(sinB, sinB))))} \\\\ \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(sinB, sinB))))}} \\\\ \\cos \\theta & = & ${printfrac(sinC)} \\end{eqnarray} よって、\\( \\cos \\theta = ${printfrac(sinC)} \\) である。`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let sinBB = getRandomInt(1, possibleSideA.length - 1);
+                    let sinB = [1, possibleSideA[getRandomInt(0, sinBB - 1)], 1, possibleSideA[sinBB]];
+                    sinB = simplsqrt(sinB);
+                    sinB = simplfrac(sinB);
+                    if (sinB[1] != 1 && sinB[3] != 1) {
+                        sinB = rationalize(sinB);
+                    }
+                    let sinC = [1, sinB[2] * sinB[2] * sinB[3] - sinB[0] * sinB[0] * sinB[1], 1, sinB[2] * sinB[2] * sinB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem2() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let sinBB = getRandomInt(1, possibleSideA.length - 1);
+                let sinB = [1, possibleSideA[getRandomInt(0, sinBB - 1)], 1, possibleSideA[sinBB]];
+                sinB = simplsqrt(sinB);
+                sinB = simplfrac(sinB);
+                if (sinB[1] != 1 && sinB[3] != 1) {
+                    sinB = rationalize(sinB);
+                }
+                let sinC = [1, sinB[2] * sinB[2] * sinB[3] - sinB[0] * sinB[0] * sinB[1], sinB[2], sinB[3]];
+                sinC = simplsqrt(sinC);
+                sinC = simplfrac(sinC);
+                if (sinC[1] != 1 && sinC[3] != 1) {
+                    sinC = rationalize(sinC);
+                }
+                let tanC = [sinB[0], sinB[1], 1, sinB[2] * sinB[2] * sinB[3] - sinB[0] * sinB[0] * sinB[1]];
+                tanC = simplsqrt(tanC);
+                tanC = simplfrac(tanC);
+                if (tanC[1] != 1 && tanC[3] != 1) {
+                    tanC = rationalize(tanC);
+                }
+                let answer = `${printfrac(tanC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\sin  \\theta = ${printfrac(sinB)} \\) であるとき、\\( \\tan \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, tanC);
+                midwayceremony = `\\( \\sin^2 \\theta + \\cos^2 \\theta = 1 \\) に代入すると、\\begin{eqnarray} \\left( ${printfrac(sinB)} \\right)^2 + \\cos^2 \\theta & = & 1 \\\\ \\cos^2 \\theta & = & 1 - ${printfrac(times(sinB, sinB))} \\\\ \\cos^2 \\theta & = & ${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(sinB, sinB))))} \\\\ \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(sinB, sinB))))}} \\\\ \\cos \\theta & = & ${printfrac(sinC)} \\\\ \\tan \\theta & = & \\frac{\\sin \\theta}{\\cos \\theta} に代入\\\\ \\tan \\theta & = & \\frac{${printfrac(sinB)}}{${printfrac(sinC)}} \\\\ \\tan \\theta & = & ${printfrac(tanC)} \\end{eqnarray} よって、\\( \\tan \\theta = ${printfrac(tanC)} \\) である。`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let sinBB = getRandomInt(1, possibleSideA.length - 1);
+                    let sinB = [1, possibleSideA[getRandomInt(0, sinBB - 1)], 1, possibleSideA[sinBB]];
+                    sinB = simplsqrt(sinB);
+                    sinB = simplfrac(sinB);
+                    if (sinB[1] != 1 && sinB[3] != 1) {
+                        sinB = rationalize(sinB);
+                    }
+                    let sinC = [1, sinB[2] * sinB[2] * sinB[3] - sinB[0] * sinB[0] * sinB[1], 1, sinB[2] * sinB[2] * sinB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem3() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                cosB = simplsqrt(cosB);
+                cosB = simplfrac(cosB);
+                if (cosB[1] != 1 && cosB[3] != 1) {
+                    cosB = rationalize(cosB);
+                }
+                let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], 1, cosB[2] * cosB[2] * cosB[3]];
+                sinC = simplsqrt(sinC);
+                sinC = simplfrac(sinC);
+                if (sinC[1] != 1 && sinC[3] != 1) {
+                    sinC = rationalize(sinC);
+                }
+                let answer = `${printfrac(sinC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\cos  \\theta = ${printfrac(cosB)} \\) であるとき、\\( \\sin \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, sinC);
+                midwayceremony = `\\( \\sin^2 \\theta + \\cos^2 \\theta = 1 \\) に代入すると、\\begin{eqnarray} \\sin^2 + \\left( ${printfrac(cosB)} \\right)^2 & = & 1 \\\\ \\sin^2 \\theta & = & 1 - ${printfrac(times(cosB, cosB))} \\\\ \\sin^2 \\theta & = & ${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(cosB, cosB))))} \\\\ \\sin \\theta &>&0 なので\\\\ \\sin \\theta &=& \\sqrt{${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(cosB, cosB))))}} \\\\ \\sin \\theta & = & ${printfrac(sinC)} \\end{eqnarray} よって、\\( \\sin \\theta = ${printfrac(sinC)} \\) である。`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                    let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                    cosB = simplsqrt(cosB);
+                    cosB = simplfrac(cosB);
+                    if (cosB[1] != 1 && cosB[3] != 1) {
+                        cosB = rationalize(cosB);
+                    }
+                    let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], 1, cosB[2] * cosB[2] * cosB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem4() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                cosB = simplsqrt(cosB);
+                cosB = simplfrac(cosB);
+                if (cosB[1] != 1 && cosB[3] != 1) {
+                    cosB = rationalize(cosB);
+                }
+                let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], cos[2], cosB[3]];
+                sinC = simplsqrt(sinC);
+                sinC = simplfrac(sinC);
+                if (sinC[1] != 1 && sinC[3] != 1) {
+                    sinC = rationalize(sinC);
+                }
+                let tanC = [cosB[0], cosB[1], 1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1]];
+                tanC = simplsqrt(tanC);
+                tanC = simplfrac(tanC);
+                if (tanC[1] != 1 && tanC[3] != 1) {
+                    tanC = rationalize(tanC);
+                }
+                let answer = `${printfrac(tanC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\cos  \\theta = ${printfrac(cosB)} \\) であるとき、\\( \\tan \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, tanC);
+                midwayceremony = `\\( \\sin^2 \\theta + \\cos^2 \\theta = 1 \\) に代入すると、\\begin{eqnarray} \\sin^2 + \\left( ${printfrac(cosB)} \\right)^2 & = & 1 \\\\ \\sin^2 \\theta & = & 1 - ${printfrac(times(cosB, cosB))} \\\\ \\sin^2 \\theta & = & ${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(cosB, cosB))))} \\\\ \\sin \\theta &>&0 なので\\\\ \\sin \\theta &=& \\sqrt{${printfrac(add([1, 1, 1, 1], times([-1, 1, 1, 1], times(cosB, cosB))))}} \\\\ \\sin \\theta & = & ${printfrac(sinC)} \\\\ \\tan \\theta & = & \\frac{\\sin \\theta}{\\cos \\theta} \\\\ \\tan \\theta & = & \\frac{${printfrac(sinC)}}{${printfrac(cosB)}} \\\\ \\tan \\theta & = & ${printfrac(tanC)} \\end{eqnarray} よって、\\( \\tan\\theta = ${printfrac(tanC)}\\) である。`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                    let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                    cosB = simplsqrt(cosB);
+                    cosB = simplfrac(cosB);
+                    if (cosB[1] != 1 && cosB[3] != 1) {
+                        cosB = rationalize(cosB);
+                    }
+                    let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], 1, cosB[2] * cosB[2] * cosB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem5() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let tanB = [1, possibleSideA[getRandomInt(0, possibleSideA.length - 1)], 1, possibleSideA[getRandomInt(0, possibleSideA.length - 1)]];
+                tanB = simplsqrt(tanB);
+                tanB = simplfrac(tanB);
+                if (tanB[1] != 1 && tanB[3] != 1) {
+                    tanB = rationalize(tanB);
+                }
+                let cosC = [tanB[2], tanB[3], 1, tanB[2] * tanB[2] * tanB[3] + tanB[0] * tanB[0] * tanB[1]];
+                cosC = simplsqrt(cosC);
+                cosC = simplfrac(cosC);
+                if (cosC[1] != 1 && cosC[3] != 1) {
+                    cosC = rationalize(cosC);
+                }
+                let answer = `${printfrac(cosC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\tan  \\theta = ${printfrac(tanB)} \\) であるとき、\\( \\cos \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, cosC);
+                midwayceremony = `\\( 1+ \\tan^2 \\theta = \\dfrac{1}{\\cos^2 \\theta} \\) に代入すると、\\begin{eqnarray} 1+ \\left( ${printfrac(tanB)} \\right)^2  & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ 1+ ${printfrac(times(tanB, tanB))} & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ ${printfrac(add([1, 1, 1, 1], times(tanB, tanB)))}& = & \\dfrac{1}{\\cos^2 \\theta} \\\\ \\cos ^2 \\theta &=& ${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))} \\\\  \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))}} \\end{eqnarray} よって、\\( \\cos \\theta = ${printfrac(cosC)} \\) である。<br>※有理化や逆有理化をしている場合もあります。<br>`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                    let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                    cosB = simplsqrt(cosB);
+                    cosB = simplfrac(cosB);
+                    if (cosB[1] != 1 && cosB[3] != 1) {
+                        cosB = rationalize(cosB);
+                    }
+                    let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], 1, cosB[2] * cosB[2] * cosB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+        function generateProblem6() {
+            generateProblem();
+            function generateProblem() {
+                const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                let tanB = [1, possibleSideA[getRandomInt(0, possibleSideA.length - 1)], 1, possibleSideA[getRandomInt(0, possibleSideA.length - 1)]];
+                tanB = simplsqrt(tanB);
+                tanB = simplfrac(tanB);
+                if (tanB[1] != 1 && tanB[3] != 1) {
+                    tanB = rationalize(tanB);
+                }
+                let cosC = [tanB[2], tanB[3], 1, tanB[2] * tanB[2] * tanB[3] + tanB[0] * tanB[0] * tanB[1]];
+                cosC = simplsqrt(cosC);
+                cosC = simplfrac(cosC);
+                if (cosC[1] != 1 && cosC[3] != 1) {
+                    cosC = rationalize(cosC);
+                }
+                let sinC = [tanB[0], tanB[1], 1, tanB[2] * tanB[2] * tanB[3] + tanB[0] * tanB[0] * tanB[1]];
+                sinC = simplsqrt(sinC);
+                sinC = simplfrac(sinC);
+                if (sinC[1] != 1 && sinC[3] != 1) {
+                    sinC = rationalize(sinC);
+                }
+                let answer = `${printfrac(sinC)}`;
+                let question = ` \\( \\theta \\) は鋭角とする。\\( \\tan  \\theta = ${printfrac(tanB)} \\) であるとき、\\( \\sin \\theta \\) を求めよ。 `;
+
+                currentSolution = `${answer}`;
+                const options = generateOptions(currentSolution, sinC);
+                midwayceremony = `\\( 1+ \\tan^2 \\theta = \\dfrac{1}{\\cos^2 \\theta} \\) に代入すると、\\begin{eqnarray} 1+ \\left( ${printfrac(tanB)} \\right)^2  & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ 1+ ${printfrac(times(tanB, tanB))} & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ ${printfrac(add([1, 1, 1, 1], times(tanB, tanB)))}& = & \\dfrac{1}{\\cos^2 \\theta} \\\\ \\cos ^2 \\theta &=& ${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))} \\\\  \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))}} \\\\ \\tan \\theta &=& \\dfrac{${printfrac(sinC)}}{${printfrac(cosC)}} \\\\ \\sin \\theta &=& \\tan \\theta \\times \\cos \\theta \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\times ${printfrac(cosC)} \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\\\end{eqnarray} よって、\\( \\sin \\theta = ${printfrac(sinC)} \\) である。<br>※有理化や逆有理化をしている場合もあります。<br>`;
+                document.getElementById("problem").innerHTML = question;
+                document.getElementById("solution").innerHTML = '';
+                document.getElementById("options").innerHTML = options.map((option, index) =>
+                    `<button class="option" onclick = "checkAnswer('${option}', '${currentSolution}', '${midwayceremony}')"> ${index + 1}: $$${option}$$</button>`
+                ).join('');
+
+                MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+            }
+
+            function generateOptions(correct, correctFrac) {
+                const options = [correct];
+                // 候補の数値的同値性を管理するセット（丸めた値をキーにする）
+                const seen = new Set();
+                // 分子/分母とルートで表される分数表現の数値化
+                function fracValue(frac) {
+                    if (!Array.isArray(frac) || frac.length < 4) return NaN;
+                    const num = frac[0] * Math.sqrt(frac[1]);
+                    const den = frac[2] * Math.sqrt(frac[3]);
+                    return num / den;
+                }
+                // 正解の配列が渡されたらそれをキー登録する（安全性のため try）
+                try {
+                    if (Array.isArray(correctFrac)) {
+                        const correctVal = fracValue(correctFrac);
+                        if (!Number.isNaN(correctVal)) seen.add(correctVal.toFixed(12));
+                    } else {
+                        // フォールバック: もし配列が渡ってこなければ、
+                        // 文字列 correct を使って既存 options を初期化しているので
+                        // 後続の候補生成時に比較は文字列ベースでも行う
+                    }
+                } catch (e) { /* ignore */ }
+
+                while (options.length < 4) {
+                    const possibleSideA = [1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 20, 24];
+                    let cosBB = getRandomInt(1, possibleSideA.length - 1);
+                    let cosB = [1, possibleSideA[getRandomInt(0, cosBB - 1)], 1, possibleSideA[cosBB]];
+                    cosB = simplsqrt(cosB);
+                    cosB = simplfrac(cosB);
+                    if (cosB[1] != 1 && cosB[3] != 1) {
+                        cosB = rationalize(cosB);
+                    }
+                    let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], 1, cosB[2] * cosB[2] * cosB[3]];
+                    sinC = simplsqrt(sinC);
+                    sinC = simplfrac(sinC);
+                    if (sinC[1] != 1 && sinC[3] != 1) {
+                        sinC = rationalize(sinC);
+                    }
+
+                    // 数値的に既出かを判定（有理化表記や分母分子入替の同値性を吸収）
+                    const val = fracValue(sinC);
+                    const key = Number.isNaN(val) ? null : val.toFixed(12);
+                    // 既に同値なものがあれば追加しない。さらに文字列の重複も避ける。
+                    if (key && !seen.has(key)) {
+                        const repr = printfrac(sinC).replace(/\s/g, '');
+                        // options は文字列なので文字列重複も確認
+                        const existing = options.some(o => o.replace(/\s/g, '') === repr);
+                        if (!existing) {
+                            options.push(printfrac(sinC));
+                            seen.add(key);
+                        }
+                    }
+                }
+                return shuffleArray(options);
+            }
+        }
+
+
+        function checkAnswer(selected, correct, midway) {
+            const isCorrect = selected.trim() === correct.trim();
+            let escapedCorrect = correct.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            let escapedSelected = selected.replace(/\frac/g, '\\frac').replace(/sqrt/g, '\\sqrt').replace(/circ/g, '\\circ');
+            document.getElementById("solution").innerHTML = isCorrect
+                ? '正解です！'
+                : `\\( ${escapedSelected} \\)は不正解です。<br>${midwayceremony}正しい答えは: \\( ${escapedCorrect} \\)`;
+
+            if (isCorrect) {
+                correctCount++;
+            } else {
+                correctCount = 0;
+            }
+
+            if (correctCount === 3) {
+                clearInterval(timerInterval);
+                endQuiz();
+            } else {
+                document.getElementById("options").innerHTML = '<button onclick="nextProblem()">次の問題に進む</button>';
+            }
+
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+        }
+
+        function endQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("end-screen").style.display = "block";
+            document.getElementById("elapsedTime").innerText = timeLeft;
+            // 終了時にレベル選択できるようにボタンを有効化
+            enableLevelButtons(true);
+            // ハイライトは現在の選択を維持
+            highlightLevel(selectedLevel);
+        }
+
+        // スタート画面に戻してリセット（直接自動開始しない）
+        function resetQuiz() {
+            clearInterval(timerInterval);
+            correctCount = 0;
+            timeLeft = 0;
+            document.getElementById("end-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "none";
+            document.getElementById("start-screen").style.display = "block";
+            enableLevelButtons(true);
+            highlightLevel(selectedLevel);
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            document.getElementById("start-screen").style.display = "block";
+            highlightLevel(selectedLevel);
+        };
+    </script>
+</body>
+
+</html>
