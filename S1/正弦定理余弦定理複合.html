@@ -73,6 +73,20 @@
         canvas {
             border: 2px solid rgba(0, 0, 0, 0.2);
         }
+
+        /* 終了画面の星表示 */
+        #stars {
+            font-size: 48px;
+            margin: 10px 0;
+            color: #f5c518;
+            /* ゴールド */
+            text-align: center;
+        }
+
+        #stars .star {
+            margin: 0 6px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
@@ -118,8 +132,11 @@
         <h1>終了画面</h1>
         <p>お疲れ様でした！</p>
         <p>3問正解するまでにかかった時間: <span id="elapsedTime"></span>秒</p>
+        <!-- 星評価表示 -->
+        <p id="stars" aria-live="polite"></p>
         <p>レベルを選んで再チャレンジしてください（ボタンを押すと開始します）：</p>
         <div>
+            <button onclick="restartSameLevel()">もう一度挑戦（同じレベル）</button>
             <button class="level-button" data-level="3" onclick="setLevel(3)">正弦定理1</button>
             <button class="level-button" data-level="4" onclick="setLevel(4)">正弦定理2</button>
             <button class="level-button" data-level="5" onclick="setLevel(5)">正弦定理3</button>
@@ -643,10 +660,26 @@
         }
 
         function endQuiz() {
+            // タイマー停止
             clearInterval(timerInterval);
+            // 画面切替
             document.getElementById("quiz-screen").style.display = "none";
             document.getElementById("end-screen").style.display = "block";
+            // 経過時間表示
             document.getElementById("elapsedTime").innerText = timeLeft;
+            // 星評価の計算と表示
+            const starsEl = document.getElementById("stars");
+            let stars = '';
+            if (timeLeft <= 60) {
+                stars = '★★★';
+            } else if (timeLeft <= 120) {
+                stars = '★★';
+            } else if (timeLeft <= 180) {
+                stars = '★';
+            } else {
+                stars = ''; // 180秒を超える場合は星を表示しない
+            }
+            starsEl.innerText = stars;
             // 終了時にレベル選択できるようにボタンを有効化
             enableLevelButtons(true);
             // ハイライトは現在の選択を維持
@@ -663,6 +696,24 @@
             document.getElementById("start-screen").style.display = "block";
             enableLevelButtons(true);
             highlightLevel(selectedLevel);
+        }
+
+        // 同じレベルで再挑戦する（終了画面のボタン用）
+        function restartSameLevel() {
+            // 既存タイマーをクリア
+            clearInterval(timerInterval);
+            // カウントリセット
+            correctCount = 0;
+            timeLeft = 0;
+            // 画面切替
+            document.getElementById("end-screen").style.display = "none";
+            document.getElementById("quiz-screen").style.display = "block";
+            // レベルボタンを無効化して現在の選択を維持
+            enableLevelButtons(false);
+            highlightLevel(selectedLevel);
+            // 最初の問題を出してタイマーを開始
+            nextProblem();
+            startTimer();
         }
 
         function getRandomInt(min, max) {
