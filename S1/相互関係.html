@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>相互関係のクイズ</title>
+    <title>正弦・余弦定理のクイズ</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,13 +73,94 @@
         canvas {
             border: 2px solid rgba(0, 0, 0, 0.2);
         }
+
+        /* 終了画面の星表示 */
+        #stars {
+            font-size: 48px;
+            margin: 10px 0;
+            color: #f5c518;
+            /* ゴールド */
+            text-align: center;
+        }
+
+        #stars .star {
+            margin: 0 6px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        /* 塗りつぶし／白抜きの見た目 */
+        #stars .star.filled {
+            color: #f5c518;
+            /* ゴールド */
+        }
+
+        #stars .star.empty {
+            color: #e9e9e9;
+            /* 白抜きに近い灰色 */
+            text-shadow: none;
+        }
+
+        /* レベルボタンの色分け（best-0..best-3） */
+        .level-button.best-0 {
+            background-color: #aaadaf;
+            /* デフォルト */
+            color: white;
+        }
+
+        .level-button.best-1 {
+            background: linear-gradient(180deg, #8bff48, #08fb55);
+            /* ブロンズ系 */
+            color: black;
+        }
+
+        .level-button.best-2 {
+            background: linear-gradient(180deg, #14ddfc, #0fa6fd);
+            /* シルバー系 */
+            color: black;
+        }
+
+        .level-button.best-3 {
+            background: linear-gradient(180deg, #f7b40c, #ff920d);
+            /* ゴールド */
+            color: black;
+        }
+
+        /* 左上の終了ボタン：枠なし・左上固定 */
+        .exit-btn-container {
+            position: absolute;
+            /* 画面に対して固定 */
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            /* 他の要素より上に表示 */
+        }
+
+        .exit-btn {
+            background: none;
+            /* 背景色なし */
+            color: #666;
+            /* 文字色（お好みで） */
+            border: 1px solid #ccc;
+            /* 薄い枠線のみ */
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .exit-btn:hover {
+            background-color: #eee;
+            /* ホバー時のみ少し背景を出す */
+            color: #000;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-AMS_HTML"></script>
 </head>
 
 <body>
     <div id="start-screen">
-        <h1>相互関係のクイズ</h1>
+        <h1>正弦・余弦定理のクイズ</h1>
         <h2>3問連続で正解しましょう！</h2>
         <div>
             <button class="level-button" data-level="6" onclick="setLevel(6)">スタート</button>
@@ -481,7 +562,7 @@
                 if (cosB[1] != 1 && cosB[3] != 1) {
                     cosB = rationalize(cosB);
                 }
-                let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], cos[2], cosB[3]];
+                let sinC = [1, cosB[2] * cosB[2] * cosB[3] - cosB[0] * cosB[0] * cosB[1], cosB[2], cosB[3]];
                 sinC = simplsqrt(sinC);
                 sinC = simplfrac(sinC);
                 if (sinC[1] != 1 && sinC[3] != 1) {
@@ -680,7 +761,7 @@
 
                 currentSolution = `${answer}`;
                 const options = generateOptions(currentSolution, sinC);
-                midwayceremony = `\\( 1+ \\tan^2 \\theta = \\dfrac{1}{\\cos^2 \\theta} \\) に代入すると、\\begin{eqnarray} 1+ \\left( ${printfrac(tanB)} \\right)^2  & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ 1+ ${printfrac(times(tanB, tanB))} & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ ${printfrac(add([1, 1, 1, 1], times(tanB, tanB)))}& = & \\dfrac{1}{\\cos^2 \\theta} \\\\ \\cos ^2 \\theta &=& ${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))} \\\\  \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))}} \\\\ \\tan \\theta &=& \\dfrac{${printfrac(sinC)}}{${printfrac(cosC)}} \\\\ \\sin \\theta &=& \\tan \\theta \\times \\cos \\theta \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\times ${printfrac(cosC)} \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\\\end{eqnarray} よって、\\( \\sin \\theta = ${printfrac(sinC)} \\) である。<br>※有理化や逆有理化をしている場合もあります。<br>`;
+                midwayceremony = `\\( 1+ \\tan^2 \\theta = \\dfrac{1}{\\cos^2 \\theta} \\) に代入すると、\\begin{eqnarray} 1+ \\left( ${printfrac(tanB)} \\right)^2  & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ 1+ ${printfrac(times(tanB, tanB))} & = & \\dfrac{1}{\\cos^2 \\theta} \\\\ ${printfrac(add([1, 1, 1, 1], times(tanB, tanB)))}& = & \\dfrac{1}{\\cos^2 \\theta} \\\\ \\cos ^2 \\theta &=& ${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))} \\\\  \\cos \\theta &>&0 なので\\\\ \\cos \\theta &=& \\sqrt{${printfrac(arc(add([1, 1, 1, 1], times(tanB, tanB))))}} \\\\ \\tan \\theta &=& \\dfrac{${printfrac(sinC)}}{${printfrac(cosC)}} \\\\ \\sin \\theta &=& \\tan \\theta \\times \\cos \\theta \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\times ${printfrac(cosC)} \\\\ \\sin \\theta &=& ${printfrac(sinC)} \\end{eqnarray} よって、\\( \\sin \\theta = ${printfrac(sinC)} \\) である。<br>※有理化や逆有理化をしている場合もあります。<br>`;
                 document.getElementById("problem").innerHTML = question;
                 document.getElementById("solution").innerHTML = '';
                 document.getElementById("options").innerHTML = options.map((option, index) =>
@@ -813,6 +894,5 @@
         };
     </script>
 </body>
-
 
 </html>
